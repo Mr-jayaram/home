@@ -51,6 +51,7 @@
         }
         .control-btn {
             transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1);
+            touch-action: manipulation;
         }
         .control-btn:hover {
             background: rgba(246, 226, 197, 0.14);
@@ -92,6 +93,7 @@
         }
         .color-chip {
             transition: transform 0.16s ease, box-shadow 0.16s ease;
+            touch-action: manipulation;
         }
         .color-chip:hover {
             transform: scale(1.16);
@@ -112,7 +114,7 @@
     </div>
 
     <!-- Top Header Bar -->
-    <header class="fixed top-4 left-4 right-4 z-20 flex flex-col items-end gap-2 pointer-events-none">
+    <header class="fixed top-3 sm:top-4 left-3 right-3 sm:left-4 sm:right-4 z-20 flex flex-col items-end gap-2 pointer-events-none">
         <!-- Master Open/Close UI Controls Button -->
         <div class="pointer-events-auto">
             <button id="btn-master-controls" onclick="toggleAllControls()" class="glass-panel control-btn active px-3.5 py-2 rounded-2xl text-xs font-semibold text-[#FFF8EE] flex items-center gap-2" title="Show or Hide All UI Controls">
@@ -124,34 +126,34 @@
         </div>
 
         <!-- Collapsible Top Option Toolbars (Lighting / Time of Day & Feature Toggles) -->
-        <div id="top-controls-group" class="flex flex-col sm:flex-row items-end sm:items-center gap-2 pointer-events-auto transition-all duration-300">
+        <div id="top-controls-group" class="flex flex-col sm:flex-row items-end sm:items-center gap-2 max-w-full pointer-events-auto transition-all duration-300">
             <!-- Lighting Modes -->
-            <div class="glass-panel rounded-2xl p-1.5 flex items-center gap-1">
-                <button id="light-day" onclick="setLightingMode('day')" class="control-btn active px-3 py-1.5 rounded-xl text-xs font-medium border border-transparent flex items-center gap-1.5" title="Bright Daylight">
+            <div class="glass-panel rounded-2xl p-1.5 flex items-center gap-1 max-w-full overflow-x-auto">
+                <button id="light-day" onclick="setLightingMode('day')" class="control-btn active px-3 py-1.5 rounded-xl text-xs font-medium border border-transparent flex items-center gap-1.5 whitespace-nowrap" title="Bright Daylight">
                     <svg class="w-3.5 h-3.5 text-amber-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
                     <span>Daylight</span>
                 </button>
-                <button id="light-sunset" onclick="setLightingMode('sunset')" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5" title="Golden Sunset">
+                <button id="light-sunset" onclick="setLightingMode('sunset')" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5 whitespace-nowrap" title="Golden Sunset">
                     <svg class="w-3.5 h-3.5 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
                     <span>Sunset</span>
                 </button>
-                <button id="light-night" onclick="setLightingMode('night')" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5" title="Night Mode">
+                <button id="light-night" onclick="setLightingMode('night')" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5 whitespace-nowrap" title="Night Mode">
                     <svg class="w-3.5 h-3.5 text-indigo-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
                     <span>Night</span>
                 </button>
             </div>
 
             <!-- Interactive Feature Toggles -->
-            <div class="glass-panel rounded-2xl p-1.5 flex items-center gap-1">
-                <button id="btn-paint-studio" onclick="togglePaintPanel()" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5" title="Open/Close Exterior Paint Customizer">
+            <div class="glass-panel rounded-2xl p-1.5 flex items-center gap-1 max-w-full overflow-x-auto">
+                <button id="btn-paint-studio" onclick="togglePaintPanel()" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5 whitespace-nowrap" title="Open/Close Exterior Paint Customizer">
                     <svg class="w-3.5 h-3.5 text-pink-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                     <span>Paint Studio</span>
                 </button>
-                <button id="btn-door" onclick="toggleDoor()" class="control-btn active px-3 py-1.5 rounded-xl text-xs font-medium border border-transparent flex items-center gap-1.5">
+                <button id="btn-door" onclick="toggleDoor()" class="control-btn active px-3 py-1.5 rounded-xl text-xs font-medium border border-transparent flex items-center gap-1.5 whitespace-nowrap">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3h8a2 2 0 012 2v16H6V5a2 2 0 012-2zm4 9h.01"/></svg>
                     <span id="door-label">Close Door</span>
                 </button>
-                <button id="btn-wireframe" onclick="toggleWireframe()" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5">
+                <button id="btn-wireframe" onclick="toggleWireframe()" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5 whitespace-nowrap">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm0 6h16M12 4v16"/></svg>
                     <span>Blueprint</span>
                 </button>
@@ -159,8 +161,8 @@
         </div>
     </header>
 
-    <!-- Collapsible Docked Exterior Paint Customizer Panel (Closed by Default) -->
-    <aside id="paint-panel" class="hidden fixed top-36 sm:top-28 right-4 z-20 w-[300px] sm:w-[325px] max-h-[calc(100vh-225px)] overflow-y-auto glass-panel rounded-2xl p-4 transition-all duration-300 pointer-events-auto">
+    <!-- Collapsible Exterior Paint Customizer Panel (Responsive Bottom Sheet on Mobile, Docked Right on Desktop) -->
+    <aside id="paint-panel" class="hidden fixed bottom-20 left-3 right-3 sm:bottom-auto sm:left-auto sm:top-28 sm:right-4 z-30 sm:w-[325px] max-h-[54vh] sm:max-h-[calc(100vh-225px)] overflow-y-auto glass-panel rounded-2xl p-4 transition-all duration-300 pointer-events-auto">
         <div class="flex items-center justify-between pb-2.5 border-b border-[#F6E2C5]/15">
             <div>
                 <h2 class="text-xs font-bold uppercase tracking-wider text-[#FFF8EE] flex items-center gap-1.5">
@@ -169,16 +171,21 @@
                 </h2>
                 <p class="text-[11px] text-[#F6E2C5]/65 mt-0.5">Live 3D material &amp; texture studio</p>
             </div>
-            <button onclick="resetOriginalColors()" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-medium text-[#FFF8EE] transition" title="Restore Original Photo Colors">
-                Reset
-            </button>
+            <div class="flex items-center gap-1.5">
+                <button onclick="resetOriginalColors()" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-medium text-[#FFF8EE] transition" title="Restore Original Photo Colors">
+                    Reset
+                </button>
+                <button onclick="togglePaintPanel()" class="sm:hidden w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold text-[#FFF8EE]" title="Close Paint Studio">
+                    &times;
+                </button>
+            </div>
         </div>
 
         <!-- Curated Full-House Exterior Color Combos -->
         <div class="mt-3">
             <span class="text-[10px] font-semibold uppercase tracking-widest text-[#F6E2C5]/65">Curated Exterior Combos</span>
             <div class="grid grid-cols-1 gap-1.5 mt-1.5" id="combo-presets-container">
-                <button onclick="applyColorCombo('original')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                <button onclick="applyColorCombo('original')" class="control-btn flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
                     <span class="text-xs font-medium text-[#FFF8EE]">Original Maroon &amp; Cream</span>
                     <span class="flex items-center -space-x-1">
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#FEE4C9"></span>
@@ -186,7 +193,7 @@
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#BD4B0F"></span>
                     </span>
                 </button>
-                <button onclick="applyColorCombo('navy')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                <button onclick="applyColorCombo('navy')" class="control-btn flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
                     <span class="text-xs font-medium text-[#FFF8EE]">Royal Navy &amp; Ivory</span>
                     <span class="flex items-center -space-x-1">
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#F8F9FA"></span>
@@ -194,7 +201,7 @@
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#C06C2B"></span>
                     </span>
                 </button>
-                <button onclick="applyColorCombo('grey')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                <button onclick="applyColorCombo('grey')" class="control-btn flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
                     <span class="text-xs font-medium text-[#FFF8EE]">Modern Grey &amp; Charcoal</span>
                     <span class="flex items-center -space-x-1">
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#EAECEF"></span>
@@ -202,7 +209,7 @@
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#9E5A28"></span>
                     </span>
                 </button>
-                <button onclick="applyColorCombo('terracotta')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                <button onclick="applyColorCombo('terracotta')" class="control-btn flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
                     <span class="text-xs font-medium text-[#FFF8EE]">Terracotta &amp; Sand</span>
                     <span class="flex items-center -space-x-1">
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#F5E6D3"></span>
@@ -210,7 +217,7 @@
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#A85820"></span>
                     </span>
                 </button>
-                <button onclick="applyColorCombo('emerald')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                <button onclick="applyColorCombo('emerald')" class="control-btn flex items-center justify-between px-2.5 py-2 sm:py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
                     <span class="text-xs font-medium text-[#FFF8EE]">Emerald Teal &amp; Cream</span>
                     <span class="flex items-center -space-x-1">
                         <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#F4EFE6"></span>
@@ -232,7 +239,7 @@
                     </div>
                     <input type="color" id="picker-wall" value="#FEE4C9" oninput="updateZoneColor('wall', this.value)" class="swatch-picker" title="Pick Main Wall Color">
                 </div>
-                <div class="flex items-center gap-1.5 mt-2" id="swatches-wall"></div>
+                <div class="flex items-center gap-2 sm:gap-1.5 mt-2" id="swatches-wall"></div>
             </div>
 
             <!-- Zone 2: Accent Trim & Columns -->
@@ -244,7 +251,7 @@
                     </div>
                     <input type="color" id="picker-accent" value="#652040" oninput="updateZoneColor('accent', this.value)" class="swatch-picker" title="Pick Accent Trim Color">
                 </div>
-                <div class="flex items-center gap-1.5 mt-2" id="swatches-accent"></div>
+                <div class="flex items-center gap-2 sm:gap-1.5 mt-2" id="swatches-accent"></div>
             </div>
 
             <!-- Zone 3: Wood Cladding & Soffit -->
@@ -256,7 +263,7 @@
                     </div>
                     <input type="color" id="picker-wood" value="#BD4B0F" oninput="updateZoneColor('wood', this.value)" class="swatch-picker" title="Pick Wood Cladding Tint">
                 </div>
-                <div class="flex items-center gap-1.5 mt-2" id="swatches-wood"></div>
+                <div class="flex items-center gap-2 sm:gap-1.5 mt-2" id="swatches-wood"></div>
             </div>
 
             <!-- Zone 4: Molding & Window Frames -->
@@ -268,7 +275,7 @@
                     </div>
                     <input type="color" id="picker-trim" value="#F6EBD9" oninput="updateZoneColor('trim', this.value)" class="swatch-picker" title="Pick Molding & Frame Color">
                 </div>
-                <div class="flex items-center gap-1.5 mt-2" id="swatches-trim"></div>
+                <div class="flex items-center gap-2 sm:gap-1.5 mt-2" id="swatches-trim"></div>
             </div>
 
             <!-- Zone 5: Granite Steps & Porch Tiles -->
@@ -280,18 +287,21 @@
                     </div>
                     <input type="color" id="picker-granite" value="#7D7777" oninput="updateZoneColor('granite', this.value)" class="swatch-picker" title="Pick Granite & Tile Color">
                 </div>
-                <div class="flex items-center gap-1.5 mt-2" id="swatches-granite"></div>
+                <div class="flex items-center gap-2 sm:gap-1.5 mt-2" id="swatches-granite"></div>
             </div>
         </div>
     </aside>
 
     <!-- Bottom Dock: Camera Viewpoint Presets -->
-    <footer id="bottom-controls-group" class="fixed bottom-4 left-4 right-4 z-20 flex flex-col items-center pointer-events-none transition-all duration-300">
+    <footer id="bottom-controls-group" class="fixed bottom-3 sm:bottom-4 left-3 right-3 sm:left-4 sm:right-4 z-20 flex flex-col items-center pointer-events-none transition-all duration-300" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
         <!-- Camera Viewpoint Presets -->
         <div class="glass-panel rounded-2xl p-1.5 pointer-events-auto max-w-full overflow-x-auto">
             <div class="flex items-center gap-1 whitespace-nowrap">
                 <button id="cam-front" onclick="setCameraPreset('front')" class="control-btn active px-3 py-2 rounded-xl text-xs font-medium border border-transparent">
                     Front Elevation
+                </button>
+                <button id="cam-back" onclick="setCameraPreset('back')" class="control-btn px-3 py-2 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent">
+                    Back Elevation
                 </button>
                 <button id="cam-perspective" onclick="setCameraPreset('perspective')" class="control-btn px-3 py-2 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent">
                     3/4 Perspective
@@ -318,20 +328,21 @@
         /**
          * ============================================================================
          * 3D ARCHITECTURAL ELEVATION VIEWER — MODERN INDIAN SINGLE-STORY RESIDENCE
-         * Built with Three.js (r128)
+         * Built with Three.js (r128) — Full 360° Front, Side & Backside Elevations
          * ============================================================================
          */
 
         // --- Global Scene & State Variables ---
         let scene, camera, renderer, controls;
         let houseGroup, environmentGroup;
-        let doorPivot;
+        let doorPivot, sideDoorPivot;
         let isDoorOpen = true; // Matches reference image where main door is slightly ajar
         let targetDoorAngle = -0.95; // Radians inward
+        let targetSideDoorAngle = -0.78; // Inward swing for under-stair doorway
         let isWireframe = false;
         let isAutoOrbit = false;
-        let currentLighting = 'day';
         let areControlsOpen = true;
+        let currentLighting = 'day';
 
         // Camera smooth interpolation state
         let isTransitioningCamera = false;
@@ -359,7 +370,7 @@
             slateMat: null
         };
 
-        // Current Active Paint State
+        // Current Active Paint State (Calibrated to exact 5-color default palette)
         const activePaintColors = {
             wall: '#FEE4C9',
             accent: '#652040',
@@ -371,7 +382,7 @@
         // Curated Indian Exterior Swatch Palettes
         const ZONE_SWATCHES = {
             wall: [
-                { name: 'Warm Cream', hex: '#FEE4C9' },
+                { name: 'Default Warm Peach Cream', hex: '#FEE4C9' },
                 { name: 'Ivory Silk', hex: '#FAF6EE' },
                 { name: 'Soft Almond', hex: '#EAD7BE' },
                 { name: 'Cool Mist Grey', hex: '#DCE1E5' },
@@ -379,7 +390,7 @@
                 { name: 'Pastel Mint', hex: '#DCECE4' }
             ],
             accent: [
-                { name: 'Deep Maroon', hex: '#652040' },
+                { name: 'Default Deep Plum Maroon', hex: '#652040' },
                 { name: 'Royal Navy', hex: '#1B365D' },
                 { name: 'Charcoal Slate', hex: '#2C3038' },
                 { name: 'Forest Teal', hex: '#164A41' },
@@ -387,7 +398,7 @@
                 { name: 'Chocolate Espresso', hex: '#432818' }
             ],
             wood: [
-                { name: 'Warm Teak', hex: '#BD4B0F' },
+                { name: 'Default Rich Teak', hex: '#BD4B0F' },
                 { name: 'Golden Teak', hex: '#CE7928' },
                 { name: 'Dark Walnut', hex: '#5E3219' },
                 { name: 'Rosewood', hex: '#7A2E1D' },
@@ -395,14 +406,14 @@
                 { name: 'Ash Grey', hex: '#6F6D6A' }
             ],
             trim: [
-                { name: 'Off-White', hex: '#F6EBD9' },
+                { name: 'Default Soft Ivory Trim', hex: '#F6EBD9' },
                 { name: 'Pure Crisp White', hex: '#FFFFFF' },
                 { name: 'Warm Cream', hex: '#F3DFC1' },
                 { name: 'Champagne Gold', hex: '#E6CFA7' },
                 { name: 'Dark Bronze', hex: '#4A3B32' }
             ],
             granite: [
-                { name: 'Grey Granite', hex: '#7D7777' },
+                { name: 'Default Slate Granite', hex: '#7D7777' },
                 { name: 'Steel Grey', hex: '#525760' },
                 { name: 'Black Galaxy', hex: '#26292E' },
                 { name: 'Sadarahalli Grey', hex: '#8D9299' },
@@ -421,13 +432,11 @@
 
         // Architectural Color Palette
         const PALETTE = {
-            cream: 0xFEE4C9,        // Warm cream/ivory exterior plaster
-            creamTrim: 0xF6EBD9,    // Brighter off-white/cream for moldings & lotus
+            cream: 0xFEE4C9,        // Warm cream/peach exterior plaster
+            creamTrim: 0xF6EBD9,    // Soft ivory/cream for moldings & lotus
             maroon: 0x652040,       // Deep maroon/plum architectural accents
             teakBase: '#BD4B0F',    // Rich warm teak wood paneling
-            teakDark: '#6B2C08',    // Wood plank groove lines
             slateTile: '#7D7777',   // Smooth slate grey veranda & stair tiles
-            slateGrout: '#4E535A',  // Tile grid joint lines
             groundSoil: '#C79B74',  // Earthy sandy courtyard soil/paving
             windowWhite: 0xF6EBD9,  // Crisp off-white casement window frame
             grillSteel: 0x2B2E33,   // Dark powder-coated security bars
@@ -605,18 +614,31 @@
         }
 
         /**
+         * Calculate responsive camera distance multiplier for narrow/portrait screens
+         */
+        function getResponsiveCameraScale() {
+            const aspect = window.innerWidth / window.innerHeight;
+            if (aspect < 0.65) return 1.52;
+            if (aspect < 1.0) return 1.28;
+            return 1.0;
+        }
+
+        /**
          * Initialize Scene, Camera, Renderer, and Controls
          */
         function init() {
             const container = document.getElementById('canvas-container');
+            const aspect = window.innerWidth / window.innerHeight;
+            const camScale = getResponsiveCameraScale();
 
             // 1. Scene
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0xC9E4FF, 0.009);
 
-            // 2. Camera
-            camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 250);
-            camera.position.set(0.2, 3.8, 17.5);
+            // 2. Camera (Responsive FOV & Distance)
+            const fov = aspect < 1.0 ? 52 : 42;
+            camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 250);
+            camera.position.set(0.2, 3.8 + (camScale - 1) * 1.1, 17.5 * camScale);
 
             // 3. Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -634,7 +656,7 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.065;
             controls.minDistance = 4.5;
-            controls.maxDistance = 42;
+            controls.maxDistance = 45;
             controls.maxPolarAngle = Math.PI / 2 - 0.025;
             controls.target.set(0, 2.8, 0);
             controls.update();
@@ -646,7 +668,7 @@
                 }
             });
 
-            // 5. Build Sky Dome, Lighting, House Architecture & Paint Studio UI
+            // 5. Build Sky Dome, Lighting, House Architecture & Paint UI
             buildSkyAndEnvironment();
             setupLighting();
             buildHouseArchitecture();
@@ -753,12 +775,226 @@
         }
 
         /**
+         * Helper: Build a Complete 2-Panel Rear Casement Window + Chajja Canopy
+         */
+        function buildRearWindowUnit(cfg) {
+            const { centerX, bottomY, topY, width, rearZ, creamTrimMat, whiteFrameMat, maroonMat, grillMat, glassMat } = cfg;
+            const height = topY - bottomY;
+            const midY = (topY + bottomY) / 2;
+
+            // Exterior Cream Window Surround Frame
+            const surroundThick = 0.12;
+            const surroundDepth = 0.22;
+            const topSurround = makeMesh(new THREE.BoxGeometry(width + surroundThick * 2, surroundThick, surroundDepth), creamTrimMat);
+            topSurround.position.set(centerX, topY + surroundThick / 2, rearZ - 0.06);
+            houseGroup.add(topSurround);
+
+            const botSurround = makeMesh(new THREE.BoxGeometry(width + surroundThick * 2, surroundThick, surroundDepth), creamTrimMat);
+            botSurround.position.set(centerX, bottomY - surroundThick / 2, rearZ - 0.06);
+            houseGroup.add(botSurround);
+
+            const leftSurround = makeMesh(new THREE.BoxGeometry(surroundThick, height, surroundDepth), creamTrimMat);
+            leftSurround.position.set(centerX - width / 2 - surroundThick / 2, midY, rearZ - 0.06);
+            houseGroup.add(leftSurround);
+
+            const rightSurround = makeMesh(new THREE.BoxGeometry(surroundThick, height, surroundDepth), creamTrimMat);
+            rightSurround.position.set(centerX + width / 2 + surroundThick / 2, midY, rearZ - 0.06);
+            houseGroup.add(rightSurround);
+
+            // 2-Panel Casement Sashes, Reflective Glass & Security Bars
+            const panelW = width / 2;
+            const barCount = Math.max(6, Math.round(height / 0.16));
+            for (let p = 0; p < 2; p++) {
+                const px = (centerX - width / 2) + panelW * (p + 0.5);
+
+                const pane = makeMesh(new THREE.BoxGeometry(panelW - 0.05, height - 0.07, 0.02), glassMat, false, false);
+                pane.position.set(px, midY, rearZ + 0.02);
+                houseGroup.add(pane);
+
+                const sashTop = makeMesh(new THREE.BoxGeometry(panelW - 0.02, 0.055, 0.07), whiteFrameMat);
+                sashTop.position.set(px, topY - 0.0275, rearZ);
+                houseGroup.add(sashTop);
+
+                const sashBot = makeMesh(new THREE.BoxGeometry(panelW - 0.02, 0.055, 0.07), whiteFrameMat);
+                sashBot.position.set(px, bottomY + 0.0275, rearZ);
+                houseGroup.add(sashBot);
+
+                const sashL = makeMesh(new THREE.BoxGeometry(0.05, height, 0.07), whiteFrameMat);
+                sashL.position.set(px - panelW / 2 + 0.025, midY, rearZ);
+                houseGroup.add(sashL);
+
+                const sashR = makeMesh(new THREE.BoxGeometry(0.05, height, 0.07), whiteFrameMat);
+                sashR.position.set(px + panelW / 2 - 0.025, midY, rearZ);
+                houseGroup.add(sashR);
+
+                const vRod = makeMesh(new THREE.CylinderGeometry(0.008, 0.008, height - 0.08, 8), grillMat);
+                vRod.position.set(px, midY, rearZ - 0.035);
+                houseGroup.add(vRod);
+
+                for (let g = 0; g < barCount; g++) {
+                    const gy = bottomY + 0.13 + g * ((height - 0.24) / Math.max(1, barCount - 1));
+                    const hBar = makeMesh(new THREE.CylinderGeometry(0.009, 0.009, panelW - 0.08, 8), grillMat);
+                    hBar.rotation.z = Math.PI / 2;
+                    hBar.position.set(px, gy, rearZ - 0.035);
+                    houseGroup.add(hBar);
+                }
+            }
+
+            // Rear Window Chajja Canopy (Themed in Cream & Maroon Accent)
+            const chajjaY = topY + 0.16;
+            const chajjaW = width + 0.44;
+            const chajjaD = 0.48;
+            const chajjaZ = rearZ - chajjaD / 2 - 0.02;
+
+            const cSoffit = makeMesh(new THREE.BoxGeometry(chajjaW, 0.05, chajjaD), creamTrimMat);
+            cSoffit.position.set(centerX, chajjaY, chajjaZ);
+            houseGroup.add(cSoffit);
+
+            const cMaroon = makeMesh(new THREE.BoxGeometry(chajjaW, 0.11, chajjaD), maroonMat);
+            cMaroon.position.set(centerX, chajjaY + 0.08, chajjaZ);
+            houseGroup.add(cMaroon);
+
+            const cCap = makeMesh(new THREE.BoxGeometry(chajjaW + 0.04, 0.04, chajjaD + 0.03), creamTrimMat);
+            cCap.position.set(centerX, chajjaY + 0.155, chajjaZ);
+            houseGroup.add(cCap);
+        }
+
+        /**
+         * Helper: Circular Louvered Exhaust Vent on Rear Facade
+         */
+        function buildRearCircularVent(x, y, z, creamTrimMat, grillMat) {
+            const ventGroup = new THREE.Group();
+            ventGroup.position.set(x, y, z);
+            houseGroup.add(ventGroup);
+
+            const outerRing = makeMesh(new THREE.TorusGeometry(0.18, 0.032, 12, 24), creamTrimMat);
+            ventGroup.add(outerRing);
+
+            const backPlate = makeMesh(new THREE.CylinderGeometry(0.17, 0.17, 0.03, 24), grillMat);
+            backPlate.rotation.x = Math.PI / 2;
+            backPlate.position.z = 0.01;
+            ventGroup.add(backPlate);
+
+            for (let b = 0; b < 8; b++) {
+                const blade = makeMesh(new THREE.BoxGeometry(0.025, 0.15, 0.015), creamTrimMat);
+                const angle = (b / 8) * Math.PI * 2;
+                blade.position.set(Math.cos(angle) * 0.08, Math.sin(angle) * 0.08, -0.005);
+                blade.rotation.z = angle + 0.4;
+                ventGroup.add(blade);
+            }
+
+            const hub = makeMesh(new THREE.CylinderGeometry(0.045, 0.045, 0.035, 16), creamTrimMat);
+            hub.rotation.x = Math.PI / 2;
+            hub.position.z = -0.01;
+            ventGroup.add(hub);
+        }
+
+        /**
+         * Helper: Build Frosted Louvered Bathroom Ventilator Window on Right Side Wall (X = 5.25)
+         */
+        function buildRightSideBathroomVentWindow(cfg) {
+            const { centerZ, bottomY, topY, width, wallX, creamTrimMat, whiteFrameMat, maroonMat, grillMat } = cfg;
+            const height = topY - bottomY;
+            const midY = (topY + bottomY) / 2;
+            const outerFaceX = wallX + 0.15; // 5.40
+
+            // Cream Exterior Surround Frame
+            const sThick = 0.09;
+            const sDepth = 0.22;
+            const topS = makeMesh(new THREE.BoxGeometry(sDepth, sThick, width + sThick * 2), creamTrimMat);
+            topS.position.set(outerFaceX - 0.04, topY + sThick / 2, centerZ);
+            houseGroup.add(topS);
+
+            const botS = makeMesh(new THREE.BoxGeometry(sDepth, sThick, width + sThick * 2), creamTrimMat);
+            botS.position.set(outerFaceX - 0.04, bottomY - sThick / 2, centerZ);
+            houseGroup.add(botS);
+
+            const leftS = makeMesh(new THREE.BoxGeometry(sDepth, height, sThick), creamTrimMat);
+            leftS.position.set(outerFaceX - 0.04, midY, centerZ - width / 2 - sThick / 2);
+            houseGroup.add(leftS);
+
+            const rightS = makeMesh(new THREE.BoxGeometry(sDepth, height, sThick), creamTrimMat);
+            rightS.position.set(outerFaceX - 0.04, midY, centerZ + width / 2 + sThick / 2);
+            houseGroup.add(rightS);
+
+            // Inner White Frame & Center Mullion
+            const fTop = makeMesh(new THREE.BoxGeometry(0.08, 0.05, width), whiteFrameMat);
+            fTop.position.set(outerFaceX - 0.02, topY - 0.025, centerZ);
+            houseGroup.add(fTop);
+
+            const fBot = makeMesh(new THREE.BoxGeometry(0.08, 0.05, width), whiteFrameMat);
+            fBot.position.set(outerFaceX - 0.02, bottomY + 0.025, centerZ);
+            houseGroup.add(fBot);
+
+            const fLeft = makeMesh(new THREE.BoxGeometry(0.08, height, 0.05), whiteFrameMat);
+            fLeft.position.set(outerFaceX - 0.02, midY, centerZ - width / 2 + 0.025);
+            houseGroup.add(fLeft);
+
+            const fRight = makeMesh(new THREE.BoxGeometry(0.08, height, 0.05), whiteFrameMat);
+            fRight.position.set(outerFaceX - 0.02, midY, centerZ + width / 2 - 0.025);
+            houseGroup.add(fRight);
+
+            const centerMullion = makeMesh(new THREE.BoxGeometry(0.07, height - 0.06, 0.045), whiteFrameMat);
+            centerMullion.position.set(outerFaceX - 0.02, midY, centerZ);
+            houseGroup.add(centerMullion);
+
+            // Frosted Translucent Glass Louver Slats (both bays)
+            const frostedGlassMat = new THREE.MeshPhysicalMaterial({
+                color: 0xE6F2FA,
+                roughness: 0.45,
+                metalness: 0.05,
+                transparent: true,
+                opacity: 0.78
+            });
+            const louverCount = 6;
+            const bayWidth = (width - 0.14) / 2;
+            [-1, 1].forEach(side => {
+                const bayZ = centerZ + side * (bayWidth / 2 + 0.022);
+                for (let l = 0; l < louverCount; l++) {
+                    const ly = bottomY + 0.10 + l * ((height - 0.18) / (louverCount - 1));
+                    const slat = makeMesh(new THREE.BoxGeometry(0.05, 0.015, bayWidth - 0.02), frostedGlassMat, false, false);
+                    slat.position.set(outerFaceX - 0.01, ly, bayZ);
+                    slat.rotation.z = -0.38;
+                    houseGroup.add(slat);
+                }
+            });
+
+            // Horizontal Security Grill Bars
+            for (let g = 0; g < 4; g++) {
+                const gy = bottomY + 0.15 + g * ((height - 0.28) / 3);
+                const hBar = makeMesh(new THREE.CylinderGeometry(0.009, 0.009, width - 0.06, 8), grillMat);
+                hBar.rotation.x = Math.PI / 2;
+                hBar.position.set(outerFaceX + 0.025, gy, centerZ);
+                houseGroup.add(hBar);
+            }
+
+            // Compact Cream & Maroon Chajja Sunshade Canopy above Bathroom Window
+            const chajjaY = topY + 0.13;
+            const chajjaW = width + 0.36;
+            const chajjaD = 0.38;
+            const chajjaX = outerFaceX + chajjaD / 2 - 0.02;
+
+            const cSoffit = makeMesh(new THREE.BoxGeometry(chajjaD, 0.045, chajjaW), creamTrimMat);
+            cSoffit.position.set(chajjaX, chajjaY, centerZ);
+            houseGroup.add(cSoffit);
+
+            const cMaroon = makeMesh(new THREE.BoxGeometry(chajjaD, 0.10, chajjaW), maroonMat);
+            cMaroon.position.set(chajjaX, chajjaY + 0.07, centerZ);
+            houseGroup.add(cMaroon);
+
+            const cCap = makeMesh(new THREE.BoxGeometry(chajjaD + 0.03, 0.04, chajjaW + 0.04), creamTrimMat);
+            cCap.position.set(chajjaX, chajjaY + 0.14, centerZ);
+            houseGroup.add(cCap);
+        }
+
+        /**
          * Build the Complete 3D Modern Indian Single-Story House
          */
         function buildHouseArchitecture() {
             houseGroup = new THREE.Group();
             scene.add(houseGroup);
 
+            // Shared Materials
             const bumpTex = createPlasterBumpTexture();
             const creamMat = new THREE.MeshStandardMaterial({
                 color: PALETTE.cream,
@@ -800,6 +1036,7 @@
                 metalness: 0.05
             });
 
+            // Store references for live Color Customizer updates
             sharedMaterials.creamMat = creamMat;
             sharedMaterials.maroonMat = maroonMat;
             sharedMaterials.creamTrimMat = creamTrimMat;
@@ -823,7 +1060,7 @@
             });
 
             // =========================================================================
-            // 1. MAIN HOUSE VOLUME, PORCH RECESS & ROOF TERRACE SLAB
+            // 1. MAIN HOUSE VOLUME, PORCH RECESS, BACKSIDE ELEVATION & ROOF SLAB
             // =========================================================================
             const frontZ = 3.6;
             const backZ = -4.2;
@@ -839,7 +1076,7 @@
             rearPlinth.position.set(-1.7, 0.27, -1.325);
             houseGroup.add(rearPlinth);
 
-            // Right Main Wall Section (X = 1.2 to 5.4, Y = 0.54 to 4.10)
+            // Right Main Front Wall Section (X = 1.2 to 5.4, Y = 0.54 to 4.10)
             const wallTopY = 4.10;
             const rightWallLeft = makeMesh(new THREE.BoxGeometry(0.85, wallTopY - 0.54, 0.45), creamMat);
             rightWallLeft.position.set(1.625, (wallTopY + 0.54) / 2, frontZ - 0.225);
@@ -868,19 +1105,209 @@
             houseGroup.add(sideVentFrame);
 
             // Left Exterior Side Wall of House (X = -4.45, Z = -4.2 to 3.6)
-            const leftSideWall = makeMesh(new THREE.BoxGeometry(0.30, wallTopY - 0.54, totalDepth), creamMat);
-            leftSideWall.position.set(-4.45, (wallTopY + 0.54) / 2, centerZ);
-            houseGroup.add(leftSideWall);
+            // Carved with an under-stair side doorway opening (Z = -3.45 to -2.45, Y = 0.54 to 2.65)
+            const sideDoorZMin = -3.45;
+            const sideDoorZMax = -2.45;
+            const sideDoorTopY = 2.65;
+            const sideWallH = wallTopY - 0.54;
+            const sideWallCenterY = (wallTopY + 0.54) / 2;
+
+            // 1) Rear segment behind under-stair door (Z = -4.20 to -3.45)
+            const leftSideWallRear = makeMesh(new THREE.BoxGeometry(0.30, sideWallH, sideDoorZMin - backZ), creamMat);
+            leftSideWallRear.position.set(-4.45, sideWallCenterY, (backZ + sideDoorZMin) / 2);
+            houseGroup.add(leftSideWallRear);
+
+            // 2) Front segment ahead of under-stair door (Z = -2.45 to 3.60)
+            const leftSideWallFront = makeMesh(new THREE.BoxGeometry(0.30, sideWallH, frontZ - sideDoorZMax), creamMat);
+            leftSideWallFront.position.set(-4.45, sideWallCenterY, (sideDoorZMax + frontZ) / 2);
+            houseGroup.add(leftSideWallFront);
+
+            // 3) Lintel header wall above under-stair door (Z = -3.45 to -2.45, Y = 2.65 to 4.10)
+            const leftSideWallHeader = makeMesh(new THREE.BoxGeometry(0.30, wallTopY - sideDoorTopY, sideDoorZMax - sideDoorZMin), creamMat);
+            leftSideWallHeader.position.set(-4.45, (wallTopY + sideDoorTopY) / 2, (sideDoorZMin + sideDoorZMax) / 2);
+            houseGroup.add(leftSideWallHeader);
+
+            // Under-Stair Side Entrance Door Frame, Threshold, Plinth Steps, Door Leaf & Switchboard
+            const sideDoorCenterZ = (sideDoorZMin + sideDoorZMax) / 2; // -2.95
+            const sideDoorOpenW = sideDoorZMax - sideDoorZMin; // 1.00
+            const sideDoorOpenH = sideDoorTopY - 0.54; // 2.11
+
+            const sideJambRear = makeMesh(new THREE.BoxGeometry(0.32, sideDoorOpenH, 0.08), whiteFrameMat);
+            sideJambRear.position.set(-4.45, 0.54 + sideDoorOpenH / 2, sideDoorZMin + 0.04);
+            houseGroup.add(sideJambRear);
+
+            const sideJambFront = makeMesh(new THREE.BoxGeometry(0.32, sideDoorOpenH, 0.08), whiteFrameMat);
+            sideJambFront.position.set(-4.45, 0.54 + sideDoorOpenH / 2, sideDoorZMax - 0.04);
+            houseGroup.add(sideJambFront);
+
+            const sideFrameTop = makeMesh(new THREE.BoxGeometry(0.32, 0.08, sideDoorOpenW), whiteFrameMat);
+            sideFrameTop.position.set(-4.45, sideDoorTopY - 0.04, sideDoorCenterZ);
+            houseGroup.add(sideFrameTop);
+
+            // Granite Threshold Sill & Exterior Plinth Entry Steps under the Staircase (X = -4.60 to -5.18)
+            const sideThreshold = makeMesh(new THREE.BoxGeometry(0.42, 0.04, sideDoorOpenW + 0.06), slateMat);
+            sideThreshold.position.set(-4.52, 0.545, sideDoorCenterZ);
+            houseGroup.add(sideThreshold);
+
+            // Upper exterior step outside door (Y = 0.0 to 0.36)
+            const sideStepUpper = makeMesh(new THREE.BoxGeometry(0.34, 0.34, sideDoorOpenW + 0.16), creamMat);
+            sideStepUpper.position.set(-4.77, 0.17, sideDoorCenterZ);
+            houseGroup.add(sideStepUpper);
+
+            const sideStepUpperTread = makeMesh(new THREE.BoxGeometry(0.36, 0.03, sideDoorOpenW + 0.18), slateMat);
+            sideStepUpperTread.position.set(-4.77, 0.355, sideDoorCenterZ);
+            houseGroup.add(sideStepUpperTread);
+
+            // Lower exterior ground step under staircase (Y = 0.0 to 0.18)
+            const sideStepLower = makeMesh(new THREE.BoxGeometry(0.32, 0.16, sideDoorOpenW + 0.16), creamMat);
+            sideStepLower.position.set(-5.08, 0.08, sideDoorCenterZ);
+            houseGroup.add(sideStepLower);
+
+            const sideStepLowerTread = makeMesh(new THREE.BoxGeometry(0.34, 0.03, sideDoorOpenW + 0.18), slateMat);
+            sideStepLowerTread.position.set(-5.08, 0.175, sideDoorCenterZ);
+            houseGroup.add(sideStepLowerTread);
+
+            // Hinged Wooden Side Door Leaf (hinged on rear jamb at Z = -3.37, swinging inward +X)
+            const sideDoorMat = new THREE.MeshStandardMaterial({
+                map: createTeakWoodTexture(true),
+                color: 0x9C4212,
+                roughness: 0.42,
+                metalness: 0.08
+            });
+            sideDoorPivot = new THREE.Group();
+            sideDoorPivot.position.set(-4.42, 0.56, sideDoorZMin + 0.08);
+            houseGroup.add(sideDoorPivot);
+
+            const sLeafW = sideDoorOpenW - 0.16; // 0.84
+            const sLeafH = sideDoorOpenH - 0.09; // 2.02
+            const sideDoorLeaf = makeMesh(new THREE.BoxGeometry(0.05, sLeafH, sLeafW), sideDoorMat);
+            sideDoorLeaf.position.set(0, sLeafH / 2, sLeafW / 2);
+            sideDoorPivot.add(sideDoorLeaf);
+
+            const sideBrassMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, roughness: 0.25, metalness: 0.85 });
+            const sideDoorHandle = makeMesh(new THREE.BoxGeometry(0.08, 0.18, 0.03), sideBrassMat);
+            sideDoorHandle.position.set(0, 1.02, sLeafW - 0.10);
+            sideDoorPivot.add(sideDoorHandle);
+
+            sideDoorPivot.rotation.y = targetSideDoorAngle;
+
+            // Electrical Switchboard Box mounted beside the under-stair doorway
+            const sideSwitchBox = makeMesh(new THREE.BoxGeometry(0.05, 0.22, 0.30), whiteFrameMat);
+            sideSwitchBox.position.set(-4.615, 2.38, sideDoorZMax + 0.24);
+            houseGroup.add(sideSwitchBox);
+
+            const sideSwitchPlate = makeMesh(new THREE.BoxGeometry(0.015, 0.16, 0.24), grillMat);
+            sideSwitchPlate.position.set(-4.638, 2.38, sideDoorZMax + 0.24);
+            houseGroup.add(sideSwitchPlate);
 
             // Right Exterior Side Wall of House (X = 5.25, Z = -4.2 to 3.6)
-            const rightSideWall = makeMesh(new THREE.BoxGeometry(0.30, wallTopY - 0.54, totalDepth), creamMat);
-            rightSideWall.position.set(5.25, (wallTopY + 0.54) / 2, centerZ);
-            houseGroup.add(rightSideWall);
+            // Built around the centered frosted bathroom ventilator window (Z = -0.80 to +0.20, Y = 2.75 to 3.45)
+            const bathWinCenterZ = centerZ; // -0.30
+            const bathWinWidth = 1.00;
+            const bathWinZMin = bathWinCenterZ - bathWinWidth / 2; // -0.80
+            const bathWinZMax = bathWinCenterZ + bathWinWidth / 2; // +0.20
+            const bathWinBotY = 2.75;
+            const bathWinTopY = 3.45;
+            const rightWallX = 5.25;
+            const rightWallThick = 0.30;
 
-            // Rear Exterior Wall (Z = -4.05, X = -4.6 to 5.4)
-            const rearWall = makeMesh(new THREE.BoxGeometry(10.0, wallTopY - 0.54, 0.30), creamMat);
-            rearWall.position.set(0.4, (wallTopY + 0.54) / 2, backZ + 0.15);
-            houseGroup.add(rearWall);
+            const rightSideRearSeg = makeMesh(new THREE.BoxGeometry(rightWallThick, wallTopY - 0.54, bathWinZMin - backZ), creamMat);
+            rightSideRearSeg.position.set(rightWallX, (wallTopY + 0.54) / 2, (backZ + bathWinZMin) / 2);
+            houseGroup.add(rightSideRearSeg);
+
+            const rightSideFrontSeg = makeMesh(new THREE.BoxGeometry(rightWallThick, wallTopY - 0.54, frontZ - bathWinZMax), creamMat);
+            rightSideFrontSeg.position.set(rightWallX, (wallTopY + 0.54) / 2, (bathWinZMax + frontZ) / 2);
+            houseGroup.add(rightSideFrontSeg);
+
+            const rightSideBelowBath = makeMesh(new THREE.BoxGeometry(rightWallThick, bathWinBotY - 0.54, bathWinWidth), creamMat);
+            rightSideBelowBath.position.set(rightWallX, (bathWinBotY + 0.54) / 2, bathWinCenterZ);
+            houseGroup.add(rightSideBelowBath);
+
+            const rightSideAboveBath = makeMesh(new THREE.BoxGeometry(rightWallThick, wallTopY - bathWinTopY, bathWinWidth), creamMat);
+            rightSideAboveBath.position.set(rightWallX, (wallTopY + bathWinTopY) / 2, bathWinCenterZ);
+            houseGroup.add(rightSideAboveBath);
+
+            // Build Frosted Louvered Bathroom Ventilator Window & Chajja Canopy
+            buildRightSideBathroomVentWindow({
+                centerZ: bathWinCenterZ,
+                bottomY: bathWinBotY,
+                topY: bathWinTopY,
+                width: bathWinWidth,
+                wallX: rightWallX,
+                creamTrimMat,
+                whiteFrameMat,
+                maroonMat,
+                grillMat
+            });
+
+            // =========================================================================
+            // REAR EXTERIOR WALL (Z = -4.05, X = -4.60 to +5.40, Y = 0.54 to 4.10)
+            // Built with real recessed openings for the two rear windows:
+            //   1) Center Rear Window: X = -1.125 to +0.425 (center X = -0.35, width = 1.55), Y = 1.62 to 3.00
+            //   2) Left-Side (Rear View) Window: X = +1.925 to +3.375 (center X = +2.65, width = 1.45), Y = 1.85 to 3.00
+            // =========================================================================
+            const rearWallZ = backZ + 0.15; // -4.05
+            const rearWallThick = 0.30;
+            const fullWallH = wallTopY - 0.54; // 3.56
+            const fullWallMidY = (wallTopY + 0.54) / 2; // 2.32
+
+            const rearSegA = makeMesh(new THREE.BoxGeometry(3.475, fullWallH, rearWallThick), creamMat);
+            rearSegA.position.set(-2.8625, fullWallMidY, rearWallZ);
+            houseGroup.add(rearSegA);
+
+            const rearSegB = makeMesh(new THREE.BoxGeometry(1.50, fullWallH, rearWallThick), creamMat);
+            rearSegB.position.set(1.175, fullWallMidY, rearWallZ);
+            houseGroup.add(rearSegB);
+
+            const rearSegC = makeMesh(new THREE.BoxGeometry(2.025, fullWallH, rearWallThick), creamMat);
+            rearSegC.position.set(4.3875, fullWallMidY, rearWallZ);
+            houseGroup.add(rearSegC);
+
+            const rearWin1Below = makeMesh(new THREE.BoxGeometry(1.55, 1.62 - 0.54, rearWallThick), creamMat);
+            rearWin1Below.position.set(-0.35, (1.62 + 0.54) / 2, rearWallZ);
+            houseGroup.add(rearWin1Below);
+
+            const rearWin1Above = makeMesh(new THREE.BoxGeometry(1.55, wallTopY - 3.00, rearWallThick), creamMat);
+            rearWin1Above.position.set(-0.35, (wallTopY + 3.00) / 2, rearWallZ);
+            houseGroup.add(rearWin1Above);
+
+            const rearWin2Below = makeMesh(new THREE.BoxGeometry(1.45, 1.85 - 0.54, rearWallThick), creamMat);
+            rearWin2Below.position.set(2.65, (1.85 + 0.54) / 2, rearWallZ);
+            houseGroup.add(rearWin2Below);
+
+            const rearWin2Above = makeMesh(new THREE.BoxGeometry(1.45, wallTopY - 3.00, rearWallThick), creamMat);
+            rearWin2Above.position.set(2.65, (wallTopY + 3.00) / 2, rearWallZ);
+            houseGroup.add(rearWin2Above);
+
+            // Build the Two Complete 2-Panel Casement Windows + Chajja Sunshades on the Rear Facade
+            buildRearWindowUnit({
+                centerX: -0.35,
+                bottomY: 1.62,
+                topY: 3.00,
+                width: 1.55,
+                rearZ: backZ + 0.04,
+                creamTrimMat,
+                whiteFrameMat,
+                maroonMat,
+                grillMat,
+                glassMat
+            });
+
+            buildRearWindowUnit({
+                centerX: 2.65,
+                bottomY: 1.85,
+                topY: 3.00,
+                width: 1.45,
+                rearZ: backZ + 0.04,
+                creamTrimMat,
+                whiteFrameMat,
+                maroonMat,
+                grillMat,
+                glassMat
+            });
+
+            // Circular Louvered Exhaust / Ventilation Fan Assembly above the X = +2.65 Rear Window
+            buildRearCircularVent(3.05, 3.55, backZ - 0.01, creamTrimMat, grillMat);
 
             // Porch Recessed Back Wall (Z = 1.55, X = -4.3 to 1.2)
             const porchBackLeft = makeMesh(new THREE.BoxGeometry(1.75, wallTopY - 0.54, 0.30), creamMat);
@@ -895,17 +1322,17 @@
             porchBackTop.position.set(-1.45, (wallTopY + 2.95) / 2, 1.55);
             houseGroup.add(porchBackTop);
 
-            // Solid Masonry Wall Panel directly underneath the Entrance Side Window (Y = 0.54 to 1.44)
-            const sideWinBottomWall = makeMesh(new THREE.BoxGeometry(0.95, 0.90, 0.30), creamMat);
-            sideWinBottomWall.position.set(-2.075, 0.54 + 0.45, 1.55);
-            houseGroup.add(sideWinBottomWall);
+            // Solid Masonry Wall Below Entrance Side Window (Y = 0.54 to 1.44, X = -2.55 to -1.70)
+            const porchSideWinBelowWall = makeMesh(new THREE.BoxGeometry(0.85, 0.90, 0.30), creamMat);
+            porchSideWinBelowWall.position.set(-2.125, 0.99, 1.55);
+            houseGroup.add(porchSideWinBelowWall);
 
             // Wall Switchboard Box on Porch Left-Back Wall
             const switchBox = makeMesh(new THREE.BoxGeometry(0.34, 0.22, 0.04), whiteFrameMat);
             switchBox.position.set(-3.22, 2.15, 1.71);
             houseGroup.add(switchBox);
 
-            // Interior Room Floor, Dark Interior Walls & Rear Window
+            // Interior Room Floor & Interior Wall Lining (Perforated around Rear Windows for Authentic Sightlines)
             const interiorFloor = makeMesh(new THREE.BoxGeometry(9.4, 0.05, 5.4), slateMat);
             interiorFloor.position.set(0.4, 0.545, -1.25);
             houseGroup.add(interiorFloor);
@@ -914,19 +1341,38 @@
                 color: PALETTE.interiorWall,
                 roughness: 0.9
             });
-            const innerRearWall = makeMesh(new THREE.BoxGeometry(9.3, 3.4, 0.08), interiorRoomMat);
-            innerRearWall.position.set(0.4, 2.25, -3.88);
-            houseGroup.add(innerRearWall);
+            const innerZ = -3.88;
+            const innerThick = 0.08;
 
-            const rearRoomWinGlow = new THREE.MeshStandardMaterial({
-                color: 0xD8F3DC,
-                emissive: 0x95D5B2,
-                emissiveIntensity: 0.75
-            });
-            const rearRoomWindow = makeMesh(new THREE.BoxGeometry(0.95, 1.05, 0.12), rearRoomWinGlow, false, false);
-            rearRoomWindow.position.set(-1.15, 1.95, -3.82);
-            houseGroup.add(rearRoomWindow);
+            const innerSegA = makeMesh(new THREE.BoxGeometry(3.175, 3.4, innerThick), interiorRoomMat);
+            innerSegA.position.set(-2.7125, 2.25, innerZ);
+            houseGroup.add(innerSegA);
 
+            const innerSegB = makeMesh(new THREE.BoxGeometry(1.50, 3.4, innerThick), interiorRoomMat);
+            innerSegB.position.set(1.175, 2.25, innerZ);
+            houseGroup.add(innerSegB);
+
+            const innerSegC = makeMesh(new THREE.BoxGeometry(1.725, 3.4, innerThick), interiorRoomMat);
+            innerSegC.position.set(4.2375, 2.25, innerZ);
+            houseGroup.add(innerSegC);
+
+            const innerWin1Below = makeMesh(new THREE.BoxGeometry(1.55, 1.07, innerThick), interiorRoomMat);
+            innerWin1Below.position.set(-0.35, 1.085, innerZ);
+            houseGroup.add(innerWin1Below);
+
+            const innerWin1Above = makeMesh(new THREE.BoxGeometry(1.55, 0.95, innerThick), interiorRoomMat);
+            innerWin1Above.position.set(-0.35, 3.475, innerZ);
+            houseGroup.add(innerWin1Above);
+
+            const innerWin2Below = makeMesh(new THREE.BoxGeometry(1.45, 1.30, innerThick), interiorRoomMat);
+            innerWin2Below.position.set(2.65, 1.20, innerZ);
+            houseGroup.add(innerWin2Below);
+
+            const innerWin2Above = makeMesh(new THREE.BoxGeometry(1.45, 0.95, innerThick), interiorRoomMat);
+            innerWin2Above.position.set(2.65, 3.475, innerZ);
+            houseGroup.add(innerWin2Above);
+
+            // Interior wooden planks leaning against inner wall
             const woodScrapMat = new THREE.MeshStandardMaterial({ color: 0x8C6D53, roughness: 0.85 });
             for (let p = 0; p < 3; p++) {
                 const plank = makeMesh(new THREE.BoxGeometry(0.08, 2.3, 0.14), woodScrapMat);
@@ -935,6 +1381,7 @@
                 houseGroup.add(plank);
             }
 
+            // Warm Interior Ceiling Point Light
             interiorLight = new THREE.PointLight(0xFFE3B3, 0.65, 8);
             interiorLight.position.set(-1.1, 3.2, 0.2);
             houseGroup.add(interiorLight);
@@ -965,8 +1412,8 @@
             houseGroup.add(porchTileTop);
 
             // 3 Wide Front Steps leading from Porch (Y=0.54) down to Courtyard (Y=0.0)
-            const stepWidth = 4.35;
-            const stepCenterX = -1.58;
+            const stepWidth = 4.45;
+            const stepCenterX = -1.665;
             for (let s = 0; s < 3; s++) {
                 const stepH = 0.18 * (3 - s);
                 const stepZ = 3.85 + (s * 0.34) + 0.17;
@@ -979,24 +1426,21 @@
                 houseGroup.add(tread);
             }
 
-            // Two Thick Deep-Maroon Square Porch Pillars
-            const leftPorchPillar = makeMesh(new THREE.BoxGeometry(0.68, 3.36, 0.62), maroonMat);
-            leftPorchPillar.position.set(-4.15, 0.54 + 1.68, 3.55);
-            houseGroup.add(leftPorchPillar);
-
+            // Right Porch Pillar (X = 0.90, Z = 3.55)
             const rightPorchPillar = makeMesh(new THREE.BoxGeometry(0.68, 3.36, 0.62), maroonMat);
             rightPorchPillar.position.set(0.90, 0.54 + 1.68, 3.55);
             houseGroup.add(rightPorchPillar);
 
-            // Cantilevered Porch Roof Slab
-            const porchSoffitTrim = makeMesh(new THREE.BoxGeometry(6.35, 0.10, 2.65), creamTrimMat);
-            porchSoffitTrim.position.set(-1.62, 3.95, 2.95);
+            // Cantilevered Porch Roof Slab (Y = 3.90 to 4.34, Z = 1.65 to 4.25)
+            const porchSoffitTrim = makeMesh(new THREE.BoxGeometry(5.96, 0.10, 2.65), creamTrimMat);
+            porchSoffitTrim.position.set(-1.63, 3.95, 2.95);
             houseGroup.add(porchSoffitTrim);
 
             const porchTeakCeiling = makeMesh(new THREE.BoxGeometry(4.45, 0.04, 2.15), teakHorizMat);
             porchTeakCeiling.position.set(-1.62, 3.90, 2.68);
             houseGroup.add(porchTeakCeiling);
 
+            // Recessed Warm Porch Ceiling Spotlights (2 fixtures)
             const bulbMat = new THREE.MeshStandardMaterial({
                 color: 0xFFF3D1,
                 emissive: 0xFFAE42,
@@ -1019,15 +1463,16 @@
                 porchLights.push(pLight);
             });
 
-            const porchMaroonFascia = makeMesh(new THREE.BoxGeometry(6.35, 0.34, 2.65), maroonMat);
-            porchMaroonFascia.position.set(-1.62, 4.17, 2.95);
+            // Deep-Maroon Porch Fascia Band
+            const porchMaroonFascia = makeMesh(new THREE.BoxGeometry(5.96, 0.34, 2.65), maroonMat);
+            porchMaroonFascia.position.set(-1.63, 4.17, 2.95);
             houseGroup.add(porchMaroonFascia);
 
             // =========================================================================
             // 3. MAIN WOODEN ENTRANCE DOOR & ATTACHED SIDE WINDOW (L-SHAPED FRAME)
             // =========================================================================
             const doorWoodMat = new THREE.MeshStandardMaterial({
-                map: createTeakWoodTexture(true, PALETTE.teakBase),
+                map: createTeakWoodTexture(true),
                 color: 0x9C4212,
                 roughness: 0.42,
                 metalness: 0.08
@@ -1083,95 +1528,72 @@
             doorPivot.rotation.y = targetDoorAngle;
 
             // =========================================================================
-            // 4. LEFT SIDE EXTERIOR STAIRCASE TO ROOF TERRACE (MATCHING SKETCH)
+            // 4. LEFT SIDE EXTERIOR STAIRCASE TO ROOF TERRACE
             // =========================================================================
             const stairGroup = new THREE.Group();
             houseGroup.add(stairGroup);
 
             const stairX = -5.18;
-            const stairWidth = 1.16; // Spans cleanly from X = -5.76 to X = -4.60 (flush with house left wall)
+            const stairWidth = 1.12;
             const numStairs = 15;
             const totalStairHeight = 4.32;
-            const stepRise = totalStairHeight / numStairs; // 0.288
+            const stepRise = totalStairHeight / numStairs; // ~0.288
             const stepRun = 0.34;
             const frontStartZ = 2.40;
-            const waistThickness = 0.26;
-            const landingDepth = 1.67;
-            const landingCenterZ = -3.365;
-            const landingSlabThick = 0.26;
+            const waistThickness = 0.24;
 
-            // Smooth sloped concrete waist slab & cantilevered top landing (clean underside)
-            // Note: rotateY(+Math.PI / 2) maps local +X to world -Z, so local X = -worldZ
-            const waistShape = new THREE.Shape();
-            waistShape.moveTo(-2.57, 0);                                   // Bottom front foot (world Z = +2.57, Y = 0)
-            waistShape.lineTo(-2.57, stepRise);                            // First riser front face
-            waistShape.lineTo(2.53, 4.32);                                 // Top step meeting landing (world Z = -2.53, Y = 4.32)
-            waistShape.lineTo(4.20, 4.32);                                 // Top landing surface to rear (world Z = -4.20, Y = 4.32)
-            waistShape.lineTo(4.20, 4.32 - landingSlabThick);              // Rear landing soffit (Y = 4.06)
-            waistShape.lineTo(2.53, 4.32 - landingSlabThick);              // Underside bend where slope meets landing
-            waistShape.lineTo(-2.22, 0);                                   // Smooth sloped soffit down to ground
-            waistShape.closePath();
-
-            const waistGeo = new THREE.ExtrudeGeometry(waistShape, {
-                depth: stairWidth,
-                bevelEnabled: false
-            });
-            waistGeo.rotateY(Math.PI / 2);
-            const waistSlabMesh = makeMesh(waistGeo, creamMat);
-            waistSlabMesh.position.set(-5.76, 0, 0);
-            stairGroup.add(waistSlabMesh);
-
-            // Individual step risers & granite treads sitting neatly atop the smooth waist slab
             for (let i = 0; i < numStairs; i++) {
                 const topH = stepRise * (i + 1);
                 const zPos = frontStartZ - (i * stepRun);
+                const blockH = i < 2 ? topH - 0.025 : stepRise + waistThickness;
+                const blockCenterY = (topH - 0.025) - (blockH / 2);
 
-                const stepRiser = makeMesh(new THREE.BoxGeometry(stairWidth, stepRise + 0.04, stepRun + 0.02), creamMat);
-                stepRiser.position.set(stairX, topH - (stepRise + 0.04) / 2 - 0.01, zPos);
-                stairGroup.add(stepRiser);
+                const stepBlock = makeMesh(new THREE.BoxGeometry(stairWidth, blockH, stepRun + 0.04), creamMat);
+                stepBlock.position.set(stairX, blockCenterY, zPos);
+                stairGroup.add(stepBlock);
 
-                const stepTop = makeMesh(new THREE.BoxGeometry(stairWidth + 0.02, 0.03, stepRun + 0.05), slateMat);
+                const stepTop = makeMesh(new THREE.BoxGeometry(stairWidth + 0.03, 0.03, stepRun + 0.05), slateMat);
                 stepTop.position.set(stairX, topH - 0.01, zPos + 0.01);
                 stairGroup.add(stepTop);
             }
 
-            // Slate grey granite tile surface on top landing
+            // Cantilevered Top Stair Landing Slab (Open underneath, flush to rear Z = -4.20)
+            const landingDepth = 1.67;
+            const landingCenterZ = -3.365;
+            const landingSlabThick = 0.26;
+            const landingBlock = makeMesh(new THREE.BoxGeometry(stairWidth, landingSlabThick, landingDepth), creamMat);
+            landingBlock.position.set(stairX, 4.32 - landingSlabThick / 2, landingCenterZ);
+            stairGroup.add(landingBlock);
+
             const landingTop = makeMesh(new THREE.BoxGeometry(stairWidth, 0.03, landingDepth), slateMat);
             landingTop.position.set(stairX, 4.33, landingCenterZ);
             stairGroup.add(landingTop);
 
-            // Low Sloping Handrail & Landing Guard Wall (matching smooth soffit underside)
-            const railHeight = 2.13; // Matches full parapet height (4.32 + 2.13 = 6.45)
-            const landingRailTopY = 4.32 + railHeight; // 6.45
+            // Staircase Guard Wall & Top Landing Wall (Aligned to full roof parapet height Y = 6.45)
+            const railHeight = 0.88;
+            const landingRailTopY = 6.45; // Matches parapetTopY so all upper walls share exact same height
             const stairWallShape = new THREE.Shape();
-            stairWallShape.moveTo(-2.57, 0);                               // Bottom front foot (world Z = +2.57, Y = 0)
-            stairWallShape.lineTo(-2.57, railHeight);                      // Front post top (world Z = +2.57, Y = 2.13)
-            stairWallShape.lineTo(2.53, landingRailTopY);                  // Sloped handrail along steps (world Z = -2.53, Y = 6.45)
-            stairWallShape.lineTo(4.20, landingRailTopY);                  // Top landing parapet (world Z = -4.20, Y = 6.45)
-            stairWallShape.lineTo(4.20, 4.32 - landingSlabThick);          // Under-slab return at rear (world Z = -4.20)
-            stairWallShape.lineTo(2.53, 4.32 - landingSlabThick);          // Under-landing corner (world Z = -2.53)
-            stairWallShape.lineTo(-2.22, 0);                               // Sloped waist-slab underside back to ground
+            stairWallShape.moveTo(-2.60, 0);                           // Bottom front foot (world Z = +2.60, Y = 0)
+            stairWallShape.lineTo(-2.60, railHeight);                  // Front post top (world Z = +2.60, Y = 0.88)
+            stairWallShape.lineTo(2.53, landingRailTopY);              // Sloped guard up to full parapet height (world Z = -2.53, Y = 6.45)
+            stairWallShape.lineTo(4.20, landingRailTopY);              // Top landing parapet at exact roof wall height (world Z = -4.20, Y = 6.45)
+            stairWallShape.lineTo(4.20, 4.32 - landingSlabThick);      // Under-slab return at rear (world Z = -4.20)
+            stairWallShape.lineTo(2.53, 4.32 - landingSlabThick);      // Under-landing corner (world Z = -2.53)
+            stairWallShape.lineTo(-2.26, 0);                           // Sloped waist-slab underside back to ground
             stairWallShape.closePath();
 
             const stairWallGeo = new THREE.ExtrudeGeometry(stairWallShape, {
-                depth: 0.26,
+                depth: 0.16,
                 bevelEnabled: false
             });
             stairWallGeo.rotateY(Math.PI / 2);
             const stairParapetWall = makeMesh(stairWallGeo, creamMat);
-            stairParapetWall.position.set(-6.02, 0, 0);
+            stairParapetWall.position.set(-5.90, 0, 0);
             stairGroup.add(stairParapetWall);
 
-            // Maroon Top Coping Cap along the Sloped Stair Handrail & Top Landing (aligned with Y = 6.45 terrace coping)
-            const slopeLength = Math.hypot(2.53 - (-2.57), landingRailTopY - railHeight);
-            const slopeAngle = Math.atan2(landingRailTopY - railHeight, 2.53 - (-2.57));
-            const slopedRailCap = makeMesh(new THREE.BoxGeometry(0.34, 0.22, slopeLength + 0.08), maroonMat);
-            slopedRailCap.position.set(-5.89, (railHeight + landingRailTopY) / 2 + 0.08, (-2.57 + 2.53) / 2 * -1);
-            slopedRailCap.rotation.x = slopeAngle;
-            stairGroup.add(slopedRailCap);
-
-            const landingSideCap = makeMesh(new THREE.BoxGeometry(0.34, 0.22, landingDepth + 0.14), maroonMat);
-            landingSideCap.position.set(-5.89, landingRailTopY + 0.08, landingCenterZ - 0.03);
+            // Maroon Coping Cap along the Top Landing Guard Wall (matching Y = 6.45 roof coping)
+            const landingSideCap = makeMesh(new THREE.BoxGeometry(0.24, 0.22, landingDepth + 0.08), maroonMat);
+            landingSideCap.position.set(-5.82, landingRailTopY + 0.08, landingCenterZ);
             stairGroup.add(landingSideCap);
 
             // =========================================================================
@@ -1287,7 +1709,7 @@
             buildPlanterPlants(planterX, planterH, planterZ);
 
             // =========================================================================
-            // 6. UPPER PARAPET & ARCHITECTURAL FACADE FEATURES
+            // 6. UPPER PARAPET & ARCHITECTURAL FACADE FEATURES (UNIFORM WALL HEIGHT)
             // =========================================================================
             const parapetBaseY = 4.32;
             const parapetTopY = 6.45;
@@ -1297,7 +1719,7 @@
             frontParapetWall.position.set(0.4, parapetBaseY + parapetH / 2, frontZ - 0.17);
             houseGroup.add(frontParapetWall);
 
-            // Side & Rear Roof Terrace Parapet Walls (Same full height Y = 6.45 as front wall)
+            // Side & Rear Roof Terrace Parapet Walls (All set to exact same height Y = 6.45)
             const terraceWallH = parapetH; // 2.13 (top at Y = 6.45)
             const terraceWallTopY = parapetTopY; // 6.45
             const leftTerraceWall = makeMesh(new THREE.BoxGeometry(0.26, terraceWallH, 6.06), creamMat);
@@ -1312,33 +1734,33 @@
             rearTerraceWall.position.set(0.4, parapetBaseY + terraceWallH / 2, backZ + 0.13);
             houseGroup.add(rearTerraceWall);
 
-            // Maroon Top Coping Cap along Terrace Side/Rear Walls (aligned with front top coping)
-            const leftCoping = makeMesh(new THREE.BoxGeometry(0.34, 0.22, 6.14), maroonMat);
+            // Maroon Top Coping Cap along Terrace Side/Rear Walls (Uniform Y = 6.45 & 0.22 thickness)
+            const leftCoping = makeMesh(new THREE.BoxGeometry(0.36, 0.22, 6.14), maroonMat);
             leftCoping.position.set(-4.47, terraceWallTopY + 0.08, 0.27);
             houseGroup.add(leftCoping);
 
-            const rightCoping = makeMesh(new THREE.BoxGeometry(0.34, 0.22, totalDepth - 0.2), maroonMat);
-            rightCoping.position.set(5.27, terraceWallTopY + 0.08, centerZ - 0.1);
+            const rightCoping = makeMesh(new THREE.BoxGeometry(0.36, 0.22, totalDepth - 0.16), maroonMat);
+            rightCoping.position.set(5.27, terraceWallTopY + 0.08, centerZ - 0.08);
             houseGroup.add(rightCoping);
 
-            const rearCoping = makeMesh(new THREE.BoxGeometry(10.1, 0.22, 0.34), maroonMat);
+            const rearCoping = makeMesh(new THREE.BoxGeometry(10.16, 0.22, 0.38), maroonMat);
             rearCoping.position.set(0.4, terraceWallTopY + 0.08, backZ + 0.13);
             houseGroup.add(rearCoping);
 
-            // Rear End Closure Parapet Wall at the back of the cantilevered stair landing (Y = 4.06 to 6.45, matching full terrace height)
-            const landingRearClosureH = landingRailTopY - (4.32 - landingSlabThick);
-            const landingRearClosureWall = makeMesh(new THREE.BoxGeometry(1.54, landingRearClosureH, 0.26), creamMat);
-            landingRearClosureWall.position.set(-5.25, (4.32 - landingSlabThick) + landingRearClosureH / 2, backZ + 0.13);
+            // Rear End Closure Wall at the back of the cantilevered stair landing (Uniform height Y = 4.06 to 6.45)
+            const landingRearClosureH = terraceWallTopY - (4.32 - landingSlabThick);
+            const landingRearClosureWall = makeMesh(new THREE.BoxGeometry(1.40, landingRearClosureH, 0.26), creamMat);
+            landingRearClosureWall.position.set(-5.14, (4.32 - landingSlabThick) + landingRearClosureH / 2, backZ + 0.13);
             houseGroup.add(landingRearClosureWall);
 
-            const landingRearCoping = makeMesh(new THREE.BoxGeometry(1.62, 0.22, 0.34), maroonMat);
-            landingRearCoping.position.set(-5.25, landingRailTopY + 0.08, backZ + 0.13);
+            const landingRearCoping = makeMesh(new THREE.BoxGeometry(1.48, 0.22, 0.38), maroonMat);
+            landingRearCoping.position.set(-5.14, terraceWallTopY + 0.08, backZ + 0.13);
             houseGroup.add(landingRearCoping);
 
-            // Far-Left & Far-Right Full-Height Deep-Maroon Vertical Edge Columns
-            const farLeftBand = makeMesh(new THREE.BoxGeometry(0.68, 6.50, 0.42), maroonMat);
-            farLeftBand.position.set(-4.32, 3.25, frontZ - 0.15);
-            houseGroup.add(farLeftBand);
+            // Merged Single Left Front Corner Pillar (Unifies porch pillar & far-left column cleanly)
+            const mergedLeftCornerPillar = makeMesh(new THREE.BoxGeometry(0.72, 6.02, 0.64), maroonMat);
+            mergedLeftCornerPillar.position.set(-4.25, 0.54 + 3.01, 3.55);
+            houseGroup.add(mergedLeftCornerPillar);
 
             const farRightBand = makeMesh(new THREE.BoxGeometry(0.66, 6.50, 0.42), maroonMat);
             farRightBand.position.set(5.12, 3.25, frontZ - 0.15);
@@ -1591,25 +2013,31 @@
             const activeBtn = document.getElementById(`cam-${presetName}`);
             if (activeBtn) activeBtn.classList.add('active');
 
+            const scale = getResponsiveCameraScale();
+
             switch (presetName) {
                 case 'front':
-                    targetCamPos.set(0.15, 3.45, 16.5);
+                    targetCamPos.set(0.15, 3.45 + (scale - 1) * 1.1, 16.5 * scale);
                     targetLookAt.set(0.15, 3.05, 0.8);
                     break;
+                case 'back':
+                    targetCamPos.set(0.15, 3.45 + (scale - 1) * 1.1, -16.5 * scale);
+                    targetLookAt.set(0.15, 3.05, -0.8);
+                    break;
                 case 'perspective':
-                    targetCamPos.set(10.8, 5.2, 13.8);
+                    targetCamPos.set(10.8 * scale, 5.2 + (scale - 1) * 1.4, 13.8 * scale);
                     targetLookAt.set(0.2, 2.8, 0.2);
                     break;
                 case 'porch':
-                    targetCamPos.set(-1.35, 2.25, 8.2);
+                    targetCamPos.set(-1.35, 2.25, 8.2 * Math.min(scale, 1.25));
                     targetLookAt.set(-1.55, 1.85, 1.8);
                     break;
                 case 'roof':
-                    targetCamPos.set(-7.5, 8.4, 9.2);
+                    targetCamPos.set(-7.5 * scale, 8.4 + (scale - 1) * 1.8, 9.2 * scale);
                     targetLookAt.set(-0.5, 4.4, 0.2);
                     break;
                 case 'bird':
-                    targetCamPos.set(9.5, 15.5, 14.5);
+                    targetCamPos.set(9.5 * scale, 15.5 + (scale - 1) * 2.5, 14.5 * scale);
                     targetLookAt.set(0.0, 2.2, 0.0);
                     break;
             }
@@ -1706,6 +2134,7 @@
         function toggleDoor() {
             isDoorOpen = !isDoorOpen;
             targetDoorAngle = isDoorOpen ? -0.95 : 0;
+            targetSideDoorAngle = isDoorOpen ? -0.78 : 0;
 
             const btn = document.getElementById('btn-door');
             const label = document.getElementById('door-label');
@@ -1744,7 +2173,7 @@
                 ZONE_SWATCHES[zone].forEach(swatch => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = 'color-chip w-5 h-5 rounded-full border border-white/40 cursor-pointer focus:outline-none';
+                    btn.className = 'color-chip w-6 h-6 sm:w-5 sm:h-5 rounded-full border border-white/40 cursor-pointer focus:outline-none';
                     btn.style.backgroundColor = swatch.hex;
                     btn.title = `${swatch.name} (${swatch.hex})`;
                     btn.onclick = () => updateZoneColor(zone, swatch.hex);
@@ -1838,7 +2267,9 @@
         }
 
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const aspect = window.innerWidth / window.innerHeight;
+            camera.aspect = aspect;
+            camera.fov = aspect < 1.0 ? 52 : 42;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
@@ -1851,6 +2282,9 @@
 
             if (doorPivot) {
                 doorPivot.rotation.y += (targetDoorAngle - doorPivot.rotation.y) * 0.08;
+            }
+            if (sideDoorPivot) {
+                sideDoorPivot.rotation.y += (targetSideDoorAngle - sideDoorPivot.rotation.y) * 0.08;
             }
 
             if (isTransitioningCamera) {
