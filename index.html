@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Architectural Elevation Viewer — Modern Indian Residence</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js & OrbitControls (r128) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #121014;
+        }
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+        /* Glassmorphism UI Styling */
+        .glass-panel {
+            background: rgba(24, 18, 26, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(246, 226, 197, 0.16);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.55);
+        }
+        .control-btn {
+            transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .control-btn:hover {
+            background: rgba(246, 226, 197, 0.14);
+            transform: translateY(-1px);
+        }
+        .control-btn.active {
+            background: linear-gradient(135deg, #6E184A 0%, #4A0E31 100%);
+            border-color: rgba(246, 226, 197, 0.45);
+            color: #FFF6E9;
+            box-shadow: 0 4px 14px rgba(91, 19, 61, 0.55);
+        }
+        /* Custom scrollbar for small screens */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(246, 226, 197, 0.25);
+            border-radius: 9999px;
+        }
+        /* Native Color Input Styling */
+        input[type="color"].swatch-picker {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            padding: 0;
+        }
+        input[type="color"].swatch-picker::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"].swatch-picker::-webkit-color-swatch {
+            border: 1.5px solid rgba(255, 248, 236, 0.45);
+            border-radius: 8px;
+        }
+        .color-chip {
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+        .color-chip:hover {
+            transform: scale(1.16);
+            box-shadow: 0 0 0 2px rgba(255, 248, 236, 0.75);
+        }
+    </style>
+</head>
+<body class="text-amber-50 antialiased">
+
+    <!-- 3D Viewport Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loader" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#18111A] transition-opacity duration-700">
+        <div class="w-14 h-14 rounded-2xl border-2 border-[#F6E2C5]/30 border-t-[#9C276B] animate-spin mb-4"></div>
+        <p class="text-sm font-medium tracking-widest uppercase text-[#F6E2C5]">Building 3D Elevation...</p>
+        <p class="text-xs text-[#F6E2C5]/60 mt-1">Generating textures, geometry &amp; lighting</p>
+    </div>
+
+    <!-- Top Header Bar -->
+    <header class="fixed top-4 left-4 right-4 z-20 flex flex-col items-end gap-2 pointer-events-none">
+        <!-- Master Open/Close UI Controls Button -->
+        <div class="pointer-events-auto">
+            <button id="btn-master-controls" onclick="toggleAllControls()" class="glass-panel control-btn active px-3.5 py-2 rounded-2xl text-xs font-semibold text-[#FFF8EE] flex items-center gap-2" title="Show or Hide All UI Controls">
+                <svg id="controls-icon-open" class="w-4 h-4 text-pink-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+                <span id="master-controls-label">Hide Options</span>
+            </button>
+        </div>
+
+        <!-- Collapsible Top Option Toolbars (Lighting / Time of Day & Feature Toggles) -->
+        <div id="top-controls-group" class="flex flex-col sm:flex-row items-end sm:items-center gap-2 pointer-events-auto transition-all duration-300">
+            <!-- Lighting Modes -->
+            <div class="glass-panel rounded-2xl p-1.5 flex items-center gap-1">
+                <button id="light-day" onclick="setLightingMode('day')" class="control-btn active px-3 py-1.5 rounded-xl text-xs font-medium border border-transparent flex items-center gap-1.5" title="Bright Daylight">
+                    <svg class="w-3.5 h-3.5 text-amber-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
+                    <span>Daylight</span>
+                </button>
+                <button id="light-sunset" onclick="setLightingMode('sunset')" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5" title="Golden Sunset">
+                    <svg class="w-3.5 h-3.5 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                    <span>Sunset</span>
+                </button>
+                <button id="light-night" onclick="setLightingMode('night')" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5" title="Night Mode">
+                    <svg class="w-3.5 h-3.5 text-indigo-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                    <span>Night</span>
+                </button>
+            </div>
+
+            <!-- Interactive Feature Toggles -->
+            <div class="glass-panel rounded-2xl p-1.5 flex items-center gap-1">
+                <button id="btn-paint-studio" onclick="togglePaintPanel()" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5" title="Open/Close Exterior Paint Customizer">
+                    <svg class="w-3.5 h-3.5 text-pink-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                    <span>Paint Studio</span>
+                </button>
+                <button id="btn-door" onclick="toggleDoor()" class="control-btn active px-3 py-1.5 rounded-xl text-xs font-medium border border-transparent flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 3h8a2 2 0 012 2v16H6V5a2 2 0 012-2zm4 9h.01"/></svg>
+                    <span id="door-label">Close Door</span>
+                </button>
+                <button id="btn-wireframe" onclick="toggleWireframe()" class="control-btn px-3 py-1.5 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm0 6h16M12 4v16"/></svg>
+                    <span>Blueprint</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Collapsible Docked Exterior Paint Customizer Panel (Closed by Default) -->
+    <aside id="paint-panel" class="hidden fixed top-36 sm:top-28 right-4 z-20 w-[300px] sm:w-[325px] max-h-[calc(100vh-225px)] overflow-y-auto glass-panel rounded-2xl p-4 transition-all duration-300 pointer-events-auto">
+        <div class="flex items-center justify-between pb-2.5 border-b border-[#F6E2C5]/15">
+            <div>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-[#FFF8EE] flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                    Exterior Paint Customizer
+                </h2>
+                <p class="text-[11px] text-[#F6E2C5]/65 mt-0.5">Live 3D material &amp; texture studio</p>
+            </div>
+            <button onclick="resetOriginalColors()" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-medium text-[#FFF8EE] transition" title="Restore Original Photo Colors">
+                Reset
+            </button>
+        </div>
+
+        <!-- Curated Full-House Exterior Color Combos -->
+        <div class="mt-3">
+            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#F6E2C5]/65">Curated Exterior Combos</span>
+            <div class="grid grid-cols-1 gap-1.5 mt-1.5" id="combo-presets-container">
+                <button onclick="applyColorCombo('original')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                    <span class="text-xs font-medium text-[#FFF8EE]">Original Maroon &amp; Cream</span>
+                    <span class="flex items-center -space-x-1">
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#FEE4C9"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#652040"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#BD4B0F"></span>
+                    </span>
+                </button>
+                <button onclick="applyColorCombo('navy')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                    <span class="text-xs font-medium text-[#FFF8EE]">Royal Navy &amp; Ivory</span>
+                    <span class="flex items-center -space-x-1">
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#F8F9FA"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#1B365D"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#C06C2B"></span>
+                    </span>
+                </button>
+                <button onclick="applyColorCombo('grey')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                    <span class="text-xs font-medium text-[#FFF8EE]">Modern Grey &amp; Charcoal</span>
+                    <span class="flex items-center -space-x-1">
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#EAECEF"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#2C3038"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#9E5A28"></span>
+                    </span>
+                </button>
+                <button onclick="applyColorCombo('terracotta')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                    <span class="text-xs font-medium text-[#FFF8EE]">Terracotta &amp; Sand</span>
+                    <span class="flex items-center -space-x-1">
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#F5E6D3"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#8E3524"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#A85820"></span>
+                    </span>
+                </button>
+                <button onclick="applyColorCombo('emerald')" class="control-btn flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-left">
+                    <span class="text-xs font-medium text-[#FFF8EE]">Emerald Teal &amp; Cream</span>
+                    <span class="flex items-center -space-x-1">
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#F4EFE6"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#164A41"></span>
+                        <span class="w-3.5 h-3.5 rounded-full border border-white/40" style="background:#B86222"></span>
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Individual Paintable Architectural Zones -->
+        <div class="mt-3.5 space-y-3 pt-3 border-t border-[#F6E2C5]/15">
+            <!-- Zone 1: Main Wall Base -->
+            <div class="bg-black/25 rounded-xl p-2.5 border border-white/5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-semibold text-[#FFF8EE]">Main Wall Base</div>
+                        <div id="hex-wall" class="text-[10px] font-mono text-[#F6E2C5]/65 uppercase">#FEE4C9</div>
+                    </div>
+                    <input type="color" id="picker-wall" value="#FEE4C9" oninput="updateZoneColor('wall', this.value)" class="swatch-picker" title="Pick Main Wall Color">
+                </div>
+                <div class="flex items-center gap-1.5 mt-2" id="swatches-wall"></div>
+            </div>
+
+            <!-- Zone 2: Accent Trim & Columns -->
+            <div class="bg-black/25 rounded-xl p-2.5 border border-white/5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-semibold text-[#FFF8EE]">Accent Trim &amp; Columns</div>
+                        <div id="hex-accent" class="text-[10px] font-mono text-[#F6E2C5]/65 uppercase">#652040</div>
+                    </div>
+                    <input type="color" id="picker-accent" value="#652040" oninput="updateZoneColor('accent', this.value)" class="swatch-picker" title="Pick Accent Trim Color">
+                </div>
+                <div class="flex items-center gap-1.5 mt-2" id="swatches-accent"></div>
+            </div>
+
+            <!-- Zone 3: Wood Cladding & Soffit -->
+            <div class="bg-black/25 rounded-xl p-2.5 border border-white/5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-semibold text-[#FFF8EE]">Wood Cladding &amp; Soffit</div>
+                        <div id="hex-wood" class="text-[10px] font-mono text-[#F6E2C5]/65 uppercase">#BD4B0F</div>
+                    </div>
+                    <input type="color" id="picker-wood" value="#BD4B0F" oninput="updateZoneColor('wood', this.value)" class="swatch-picker" title="Pick Wood Cladding Tint">
+                </div>
+                <div class="flex items-center gap-1.5 mt-2" id="swatches-wood"></div>
+            </div>
+
+            <!-- Zone 4: Molding & Window Frames -->
+            <div class="bg-black/25 rounded-xl p-2.5 border border-white/5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-semibold text-[#FFF8EE]">Molding &amp; Window Frames</div>
+                        <div id="hex-trim" class="text-[10px] font-mono text-[#F6E2C5]/65 uppercase">#F6EBD9</div>
+                    </div>
+                    <input type="color" id="picker-trim" value="#F6EBD9" oninput="updateZoneColor('trim', this.value)" class="swatch-picker" title="Pick Molding & Frame Color">
+                </div>
+                <div class="flex items-center gap-1.5 mt-2" id="swatches-trim"></div>
+            </div>
+
+            <!-- Zone 5: Granite Steps & Porch Tiles -->
+            <div class="bg-black/25 rounded-xl p-2.5 border border-white/5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-semibold text-[#FFF8EE]">Granite Steps &amp; Porch Tiles</div>
+                        <div id="hex-granite" class="text-[10px] font-mono text-[#F6E2C5]/65 uppercase">#7D7777</div>
+                    </div>
+                    <input type="color" id="picker-granite" value="#7D7777" oninput="updateZoneColor('granite', this.value)" class="swatch-picker" title="Pick Granite & Tile Color">
+                </div>
+                <div class="flex items-center gap-1.5 mt-2" id="swatches-granite"></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Bottom Dock: Camera Viewpoint Presets -->
+    <footer id="bottom-controls-group" class="fixed bottom-4 left-4 right-4 z-20 flex flex-col items-center pointer-events-none transition-all duration-300">
+        <!-- Camera Viewpoint Presets -->
+        <div class="glass-panel rounded-2xl p-1.5 pointer-events-auto max-w-full overflow-x-auto">
+            <div class="flex items-center gap-1 whitespace-nowrap">
+                <button id="cam-front" onclick="setCameraPreset('front')" class="control-btn active px-3 py-2 rounded-xl text-xs font-medium border border-transparent">
+                    Front Elevation
+                </button>
+                <button id="cam-perspective" onclick="setCameraPreset('perspective')" class="control-btn px-3 py-2 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent">
+                    3/4 Perspective
+                </button>
+                <button id="cam-porch" onclick="setCameraPreset('porch')" class="control-btn px-3 py-2 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent">
+                    Porch &amp; Entrance
+                </button>
+                <button id="cam-roof" onclick="setCameraPreset('roof')" class="control-btn px-3 py-2 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent">
+                    Roof Terrace
+                </button>
+                <button id="cam-bird" onclick="setCameraPreset('bird')" class="control-btn px-3 py-2 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent">
+                    Bird's Eye
+                </button>
+                <div class="w-px h-5 bg-[#F6E2C5]/20 mx-0.5"></div>
+                <button id="cam-orbit" onclick="toggleAutoOrbit()" class="control-btn px-3 py-2 rounded-xl text-xs font-medium text-[#F6E2C5]/85 border border-transparent flex items-center gap-1.5">
+                    <span id="orbit-dot" class="w-2 h-2 rounded-full bg-[#F6E2C5]/40"></span>
+                    <span>Auto-Orbit Tour</span>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * ============================================================================
+         * 3D ARCHITECTURAL ELEVATION VIEWER — MODERN INDIAN SINGLE-STORY RESIDENCE
+         * Built with Three.js (r128)
+         * ============================================================================
+         */
+
+        // --- Global Scene & State Variables ---
+        let scene, camera, renderer, controls;
+        let houseGroup, environmentGroup;
+        let doorPivot;
+        let isDoorOpen = true; // Matches reference image where main door is slightly ajar
+        let targetDoorAngle = -0.95; // Radians inward
+        let isWireframe = false;
+        let isAutoOrbit = false;
+        let currentLighting = 'day';
+        let areControlsOpen = true;
+
+        // Camera smooth interpolation state
+        let isTransitioningCamera = false;
+        const targetCamPos = new THREE.Vector3();
+        const targetLookAt = new THREE.Vector3();
+
+        // Lights & Emissive References for Day/Sunset/Night switching
+        let ambientLight, hemiLight, sunLight, fillLight;
+        let porchLights = [];
+        let interiorLight;
+        let emissiveFixtures = [];
+        let skyDomeMat;
+
+        // Track materials for wireframe toggle
+        const allHouseMaterials = [];
+
+        // Shared Editable Architectural Materials for Live Color Customizer
+        let sharedMaterials = {
+            creamMat: null,
+            maroonMat: null,
+            creamTrimMat: null,
+            whiteFrameMat: null,
+            teakVertMat: null,
+            teakHorizMat: null,
+            slateMat: null
+        };
+
+        // Current Active Paint State
+        const activePaintColors = {
+            wall: '#FEE4C9',
+            accent: '#652040',
+            wood: '#BD4B0F',
+            trim: '#F6EBD9',
+            granite: '#7D7777'
+        };
+
+        // Curated Indian Exterior Swatch Palettes
+        const ZONE_SWATCHES = {
+            wall: [
+                { name: 'Warm Cream', hex: '#FEE4C9' },
+                { name: 'Ivory Silk', hex: '#FAF6EE' },
+                { name: 'Soft Almond', hex: '#EAD7BE' },
+                { name: 'Cool Mist Grey', hex: '#DCE1E5' },
+                { name: 'Sand Beige', hex: '#DFC9AE' },
+                { name: 'Pastel Mint', hex: '#DCECE4' }
+            ],
+            accent: [
+                { name: 'Deep Maroon', hex: '#652040' },
+                { name: 'Royal Navy', hex: '#1B365D' },
+                { name: 'Charcoal Slate', hex: '#2C3038' },
+                { name: 'Forest Teal', hex: '#164A41' },
+                { name: 'Terracotta Rust', hex: '#8E3524' },
+                { name: 'Chocolate Espresso', hex: '#432818' }
+            ],
+            wood: [
+                { name: 'Warm Teak', hex: '#BD4B0F' },
+                { name: 'Golden Teak', hex: '#CE7928' },
+                { name: 'Dark Walnut', hex: '#5E3219' },
+                { name: 'Rosewood', hex: '#7A2E1D' },
+                { name: 'Natural Oak', hex: '#B88958' },
+                { name: 'Ash Grey', hex: '#6F6D6A' }
+            ],
+            trim: [
+                { name: 'Off-White', hex: '#F6EBD9' },
+                { name: 'Pure Crisp White', hex: '#FFFFFF' },
+                { name: 'Warm Cream', hex: '#F3DFC1' },
+                { name: 'Champagne Gold', hex: '#E6CFA7' },
+                { name: 'Dark Bronze', hex: '#4A3B32' }
+            ],
+            granite: [
+                { name: 'Grey Granite', hex: '#7D7777' },
+                { name: 'Steel Grey', hex: '#525760' },
+                { name: 'Black Galaxy', hex: '#26292E' },
+                { name: 'Sadarahalli Grey', hex: '#8D9299' },
+                { name: 'Warm Sandstone', hex: '#9E856C' }
+            ]
+        };
+
+        // Full-House Curated Exterior Combo Presets
+        const EXTERIOR_COMBOS = {
+            original: { wall: '#FEE4C9', accent: '#652040', wood: '#BD4B0F', trim: '#F6EBD9', granite: '#7D7777' },
+            navy: { wall: '#F8F9FA', accent: '#1B365D', wood: '#C06C2B', trim: '#FFFFFF', granite: '#525760' },
+            grey: { wall: '#EAECEF', accent: '#2C3038', wood: '#9E5A28', trim: '#FFFFFF', granite: '#26292E' },
+            terracotta: { wall: '#F5E6D3', accent: '#8E3524', wood: '#A85820', trim: '#FFF9F0', granite: '#9E856C' },
+            emerald: { wall: '#F4EFE6', accent: '#164A41', wood: '#B86222', trim: '#FFFFFF', granite: '#525760' }
+        };
+
+        // Architectural Color Palette
+        const PALETTE = {
+            cream: 0xFEE4C9,        // Warm cream/ivory exterior plaster
+            creamTrim: 0xF6EBD9,    // Brighter off-white/cream for moldings & lotus
+            maroon: 0x652040,       // Deep maroon/plum architectural accents
+            teakBase: '#BD4B0F',    // Rich warm teak wood paneling
+            teakDark: '#6B2C08',    // Wood plank groove lines
+            slateTile: '#7D7777',   // Smooth slate grey veranda & stair tiles
+            slateGrout: '#4E535A',  // Tile grid joint lines
+            groundSoil: '#C79B74',  // Earthy sandy courtyard soil/paving
+            windowWhite: 0xF6EBD9,  // Crisp off-white casement window frame
+            grillSteel: 0x2B2E33,   // Dark powder-coated security bars
+            interiorWall: 0x3D434A  // Shaded interior room wall tone
+        };
+
+        /**
+         * Utility: Shade or darken a hex color by a factor (-1.0 to +1.0)
+         */
+        function adjustHexBrightness(hex, percent) {
+            const num = parseInt(hex.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+            const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
+            const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+
+        /**
+         * Procedural Canvas Texture Generators
+         */
+        function createTeakWoodTexture(isVertical = true, baseHex = PALETTE.teakBase) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            const grooveHex = adjustHexBrightness(baseHex, -28);
+
+            ctx.fillStyle = baseHex;
+            ctx.fillRect(0, 0, 512, 512);
+
+            const plankCount = 16;
+            const step = 512 / plankCount;
+
+            for (let i = 0; i < plankCount; i++) {
+                const shade = (Math.sin(i * 2.3) * 8);
+                ctx.fillStyle = `rgba(${shade > 0 ? 255 : 0}, ${shade > 0 ? 225 : 0}, ${shade > 0 ? 185 : 0}, ${Math.abs(shade) / 160})`;
+                if (isVertical) {
+                    ctx.fillRect(i * step, 0, step, 512);
+                } else {
+                    ctx.fillRect(0, i * step, 512, step);
+                }
+
+                ctx.strokeStyle = 'rgba(30, 15, 5, 0.16)';
+                ctx.lineWidth = 1;
+                for (let g = 0; g < 6; g++) {
+                    const offset = (i * step) + ((g + 0.5) * (step / 6));
+                    ctx.beginPath();
+                    if (isVertical) {
+                        ctx.moveTo(offset, 0);
+                        ctx.lineTo(offset + Math.sin(i + g) * 2, 512);
+                    } else {
+                        ctx.moveTo(0, offset);
+                        ctx.lineTo(512, offset + Math.sin(i + g) * 2);
+                    }
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = grooveHex;
+                if (isVertical) {
+                    ctx.fillRect(i * step, 0, 2.5, 512);
+                } else {
+                    ctx.fillRect(0, i * step, 512, 2.5);
+                }
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.encoding = THREE.sRGBEncoding;
+            return texture;
+        }
+
+        function createSlateTileTexture(repeatX = 4, repeatY = 3, baseHex = PALETTE.slateTile) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            const groutHex = adjustHexBrightness(baseHex, -18);
+
+            ctx.fillStyle = baseHex;
+            ctx.fillRect(0, 0, 512, 512);
+
+            for (let i = 0; i < 2600; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)';
+                ctx.fillRect(x, y, 2, 2);
+            }
+
+            ctx.strokeStyle = groutHex;
+            ctx.lineWidth = 3;
+            const tiles = 4;
+            const size = 512 / tiles;
+            for (let i = 0; i <= tiles; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * size, 0);
+                ctx.lineTo(i * size, 512);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i * size);
+                ctx.lineTo(512, i * size);
+                ctx.stroke();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(repeatX, repeatY);
+            texture.encoding = THREE.sRGBEncoding;
+            return texture;
+        }
+
+        function createSandyGroundTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = PALETTE.groundSoil;
+            ctx.fillRect(0, 0, 512, 512);
+
+            for (let i = 0; i < 6500; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 512;
+                const r = 1 + Math.random() * 2.5;
+                ctx.fillStyle = Math.random() > 0.45 ? 'rgba(138, 96, 61, 0.22)' : 'rgba(235, 200, 165, 0.22)';
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(16, 16);
+            texture.encoding = THREE.sRGBEncoding;
+            return texture;
+        }
+
+        function createPlasterBumpTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, 256, 256);
+
+            for (let i = 0; i < 4000; i++) {
+                const v = 118 + Math.floor(Math.random() * 20);
+                ctx.fillStyle = `rgb(${v},${v},${v})`;
+                ctx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2);
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(8, 8);
+            return texture;
+        }
+
+        /**
+         * Helper to register meshes and collect materials
+         */
+        function makeMesh(geometry, material, castShadow = true, receiveShadow = true) {
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.castShadow = castShadow;
+            mesh.receiveShadow = receiveShadow;
+            if (material && !allHouseMaterials.includes(material)) {
+                allHouseMaterials.push(material);
+            }
+            return mesh;
+        }
+
+        /**
+         * Initialize Scene, Camera, Renderer, and Controls
+         */
+        function init() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0xC9E4FF, 0.009);
+
+            // 2. Camera
+            camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 250);
+            camera.position.set(0.2, 3.8, 17.5);
+
+            // 3. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.06;
+            container.appendChild(renderer.domElement);
+
+            // 4. OrbitControls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.065;
+            controls.minDistance = 4.5;
+            controls.maxDistance = 42;
+            controls.maxPolarAngle = Math.PI / 2 - 0.025;
+            controls.target.set(0, 2.8, 0);
+            controls.update();
+
+            controls.addEventListener('start', () => {
+                isTransitioningCamera = false;
+                if (isAutoOrbit) {
+                    setAutoOrbitState(false);
+                }
+            });
+
+            // 5. Build Sky Dome, Lighting, House Architecture & Paint Studio UI
+            buildSkyAndEnvironment();
+            setupLighting();
+            buildHouseArchitecture();
+            initPaintCustomizerUI();
+
+            // 6. Window Resize Handler
+            window.addEventListener('resize', onWindowResize);
+
+            // Hide loading screen smoothly
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 700);
+                }
+            }, 350);
+
+            // Start animation loop
+            animate();
+        }
+
+        /**
+         * Sky Dome & Courtyard Ground Plane
+         */
+        function buildSkyAndEnvironment() {
+            environmentGroup = new THREE.Group();
+            scene.add(environmentGroup);
+
+            const skyGeo = new THREE.SphereGeometry(110, 32, 20);
+            skyDomeMat = new THREE.ShaderMaterial({
+                side: THREE.BackSide,
+                depthWrite: false,
+                uniforms: {
+                    topColor: { value: new THREE.Color(0x5CA4F2) },
+                    bottomColor: { value: new THREE.Color(0xD9EEFF) },
+                    offset: { value: 12 },
+                    exponent: { value: 0.55 }
+                },
+                vertexShader: `
+                    varying vec3 vWorldPosition;
+                    void main() {
+                        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                        vWorldPosition = worldPosition.xyz;
+                        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 topColor;
+                    uniform vec3 bottomColor;
+                    uniform float offset;
+                    uniform float exponent;
+                    varying vec3 vWorldPosition;
+                    void main() {
+                        float h = normalize(vWorldPosition + offset).y;
+                        gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
+                    }
+                `
+            });
+            const skyDome = new THREE.Mesh(skyGeo, skyDomeMat);
+            environmentGroup.add(skyDome);
+
+            const groundTex = createSandyGroundTexture();
+            const groundMat = new THREE.MeshStandardMaterial({
+                map: groundTex,
+                roughness: 0.92,
+                metalness: 0.02
+            });
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = 0;
+            ground.receiveShadow = true;
+            environmentGroup.add(ground);
+        }
+
+        /**
+         * Lighting Setup (Daylight, Sunset, and Night Modes)
+         */
+        function setupLighting() {
+            hemiLight = new THREE.HemisphereLight(0xFFFDF9, 0xA88467, 0.65);
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+
+            ambientLight = new THREE.AmbientLight(0xFFF6EB, 0.25);
+            scene.add(ambientLight);
+
+            sunLight = new THREE.DirectionalLight(0xFFF8EE, 1.25);
+            sunLight.position.set(11, 18, 15);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.camera.near = 2;
+            sunLight.shadow.camera.far = 50;
+            const d = 13;
+            sunLight.shadow.camera.left = -d;
+            sunLight.shadow.camera.right = d;
+            sunLight.shadow.camera.top = d;
+            sunLight.shadow.camera.bottom = -d;
+            sunLight.shadow.bias = -0.0005;
+            scene.add(sunLight);
+
+            fillLight = new THREE.DirectionalLight(0xCBE3FF, 0.35);
+            fillLight.position.set(-14, 9, -12);
+            scene.add(fillLight);
+        }
+
+        /**
+         * Build the Complete 3D Modern Indian Single-Story House
+         */
+        function buildHouseArchitecture() {
+            houseGroup = new THREE.Group();
+            scene.add(houseGroup);
+
+            const bumpTex = createPlasterBumpTexture();
+            const creamMat = new THREE.MeshStandardMaterial({
+                color: PALETTE.cream,
+                roughness: 0.78,
+                metalness: 0.02,
+                bumpMap: bumpTex,
+                bumpScale: 0.008
+            });
+            const creamTrimMat = new THREE.MeshStandardMaterial({
+                color: PALETTE.creamTrim,
+                roughness: 0.68,
+                metalness: 0.03
+            });
+            const maroonMat = new THREE.MeshStandardMaterial({
+                color: PALETTE.maroon,
+                roughness: 0.65,
+                metalness: 0.05,
+                bumpMap: bumpTex,
+                bumpScale: 0.005
+            });
+            const teakVertMat = new THREE.MeshStandardMaterial({
+                map: createTeakWoodTexture(true, PALETTE.teakBase),
+                roughness: 0.52,
+                metalness: 0.06
+            });
+            const teakHorizMat = new THREE.MeshStandardMaterial({
+                map: createTeakWoodTexture(false, PALETTE.teakBase),
+                roughness: 0.52,
+                metalness: 0.06
+            });
+            const slateMat = new THREE.MeshStandardMaterial({
+                map: createSlateTileTexture(4, 3, PALETTE.slateTile),
+                roughness: 0.36,
+                metalness: 0.08
+            });
+            const whiteFrameMat = new THREE.MeshStandardMaterial({
+                color: PALETTE.windowWhite,
+                roughness: 0.35,
+                metalness: 0.05
+            });
+
+            sharedMaterials.creamMat = creamMat;
+            sharedMaterials.maroonMat = maroonMat;
+            sharedMaterials.creamTrimMat = creamTrimMat;
+            sharedMaterials.whiteFrameMat = whiteFrameMat;
+            sharedMaterials.teakVertMat = teakVertMat;
+            sharedMaterials.teakHorizMat = teakHorizMat;
+            sharedMaterials.slateMat = slateMat;
+
+            const grillMat = new THREE.MeshStandardMaterial({
+                color: PALETTE.grillSteel,
+                roughness: 0.35,
+                metalness: 0.75
+            });
+            const glassMat = new THREE.MeshPhysicalMaterial({
+                color: 0x1D2833,
+                roughness: 0.1,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.58,
+                reflectivity: 0.9
+            });
+
+            // =========================================================================
+            // 1. MAIN HOUSE VOLUME, PORCH RECESS & ROOF TERRACE SLAB
+            // =========================================================================
+            const frontZ = 3.6;
+            const backZ = -4.2;
+            const totalDepth = frontZ - backZ; // 7.8
+            const centerZ = (frontZ + backZ) / 2; // -0.3
+
+            // Ground Plinth Base (Y = 0 to 0.54)
+            const rightPlinth = makeMesh(new THREE.BoxGeometry(4.2, 0.54, totalDepth), creamMat);
+            rightPlinth.position.set(3.3, 0.27, centerZ);
+            houseGroup.add(rightPlinth);
+
+            const rearPlinth = makeMesh(new THREE.BoxGeometry(5.8, 0.54, 5.75), creamMat);
+            rearPlinth.position.set(-1.7, 0.27, -1.325);
+            houseGroup.add(rearPlinth);
+
+            // Right Main Wall Section (X = 1.2 to 5.4, Y = 0.54 to 4.10)
+            const wallTopY = 4.10;
+            const rightWallLeft = makeMesh(new THREE.BoxGeometry(0.85, wallTopY - 0.54, 0.45), creamMat);
+            rightWallLeft.position.set(1.625, (wallTopY + 0.54) / 2, frontZ - 0.225);
+            houseGroup.add(rightWallLeft);
+
+            const rightWallRight = makeMesh(new THREE.BoxGeometry(0.95, wallTopY - 0.54, 0.45), creamMat);
+            rightWallRight.position.set(4.925, (wallTopY + 0.54) / 2, frontZ - 0.225);
+            houseGroup.add(rightWallRight);
+
+            const rightWallBelowWin = makeMesh(new THREE.BoxGeometry(2.40, 1.21, 0.45), creamMat);
+            rightWallBelowWin.position.set(3.25, 0.54 + 0.605, frontZ - 0.225);
+            houseGroup.add(rightWallBelowWin);
+
+            const rightWallAboveWin = makeMesh(new THREE.BoxGeometry(2.40, 0.85, 0.45), creamMat);
+            rightWallAboveWin.position.set(3.25, 3.25 + 0.425, frontZ - 0.225);
+            houseGroup.add(rightWallAboveWin);
+
+            // Side Wall separating Porch from Right Interior Room (X = 1.32, Z = 1.55 to 3.6)
+            const porchRightInnerWall = makeMesh(new THREE.BoxGeometry(0.28, wallTopY - 0.54, 2.05), creamMat);
+            porchRightInnerWall.position.set(1.34, (wallTopY + 0.54) / 2, 2.575);
+            houseGroup.add(porchRightInnerWall);
+
+            // Small ventilation window on the porch right inner wall
+            const sideVentFrame = makeMesh(new THREE.BoxGeometry(0.32, 0.48, 0.42), creamTrimMat);
+            sideVentFrame.position.set(1.34, 2.85, 2.25);
+            houseGroup.add(sideVentFrame);
+
+            // Left Exterior Side Wall of House (X = -4.45, Z = -4.2 to 3.6)
+            const leftSideWall = makeMesh(new THREE.BoxGeometry(0.30, wallTopY - 0.54, totalDepth), creamMat);
+            leftSideWall.position.set(-4.45, (wallTopY + 0.54) / 2, centerZ);
+            houseGroup.add(leftSideWall);
+
+            // Right Exterior Side Wall of House (X = 5.25, Z = -4.2 to 3.6)
+            const rightSideWall = makeMesh(new THREE.BoxGeometry(0.30, wallTopY - 0.54, totalDepth), creamMat);
+            rightSideWall.position.set(5.25, (wallTopY + 0.54) / 2, centerZ);
+            houseGroup.add(rightSideWall);
+
+            // Rear Exterior Wall (Z = -4.05, X = -4.6 to 5.4)
+            const rearWall = makeMesh(new THREE.BoxGeometry(10.0, wallTopY - 0.54, 0.30), creamMat);
+            rearWall.position.set(0.4, (wallTopY + 0.54) / 2, backZ + 0.15);
+            houseGroup.add(rearWall);
+
+            // Porch Recessed Back Wall (Z = 1.55, X = -4.3 to 1.2)
+            const porchBackLeft = makeMesh(new THREE.BoxGeometry(1.75, wallTopY - 0.54, 0.30), creamMat);
+            porchBackLeft.position.set(-3.425, (wallTopY + 0.54) / 2, 1.55);
+            houseGroup.add(porchBackLeft);
+
+            const porchBackRight = makeMesh(new THREE.BoxGeometry(1.55, wallTopY - 0.54, 0.30), creamMat);
+            porchBackRight.position.set(0.425, (wallTopY + 0.54) / 2, 1.55);
+            houseGroup.add(porchBackRight);
+
+            const porchBackTop = makeMesh(new THREE.BoxGeometry(2.20, wallTopY - 2.95, 0.30), creamMat);
+            porchBackTop.position.set(-1.45, (wallTopY + 2.95) / 2, 1.55);
+            houseGroup.add(porchBackTop);
+
+            // Solid Masonry Wall Panel directly underneath the Entrance Side Window (Y = 0.54 to 1.44)
+            const sideWinBottomWall = makeMesh(new THREE.BoxGeometry(0.95, 0.90, 0.30), creamMat);
+            sideWinBottomWall.position.set(-2.075, 0.54 + 0.45, 1.55);
+            houseGroup.add(sideWinBottomWall);
+
+            // Wall Switchboard Box on Porch Left-Back Wall
+            const switchBox = makeMesh(new THREE.BoxGeometry(0.34, 0.22, 0.04), whiteFrameMat);
+            switchBox.position.set(-3.22, 2.15, 1.71);
+            houseGroup.add(switchBox);
+
+            // Interior Room Floor, Dark Interior Walls & Rear Window
+            const interiorFloor = makeMesh(new THREE.BoxGeometry(9.4, 0.05, 5.4), slateMat);
+            interiorFloor.position.set(0.4, 0.545, -1.25);
+            houseGroup.add(interiorFloor);
+
+            const interiorRoomMat = new THREE.MeshStandardMaterial({
+                color: PALETTE.interiorWall,
+                roughness: 0.9
+            });
+            const innerRearWall = makeMesh(new THREE.BoxGeometry(9.3, 3.4, 0.08), interiorRoomMat);
+            innerRearWall.position.set(0.4, 2.25, -3.88);
+            houseGroup.add(innerRearWall);
+
+            const rearRoomWinGlow = new THREE.MeshStandardMaterial({
+                color: 0xD8F3DC,
+                emissive: 0x95D5B2,
+                emissiveIntensity: 0.75
+            });
+            const rearRoomWindow = makeMesh(new THREE.BoxGeometry(0.95, 1.05, 0.12), rearRoomWinGlow, false, false);
+            rearRoomWindow.position.set(-1.15, 1.95, -3.82);
+            houseGroup.add(rearRoomWindow);
+
+            const woodScrapMat = new THREE.MeshStandardMaterial({ color: 0x8C6D53, roughness: 0.85 });
+            for (let p = 0; p < 3; p++) {
+                const plank = makeMesh(new THREE.BoxGeometry(0.08, 2.3, 0.14), woodScrapMat);
+                plank.position.set(-0.55 + p * 0.07, 1.65, -0.4 - p * 0.35);
+                plank.rotation.z = 0.14;
+                houseGroup.add(plank);
+            }
+
+            interiorLight = new THREE.PointLight(0xFFE3B3, 0.65, 8);
+            interiorLight.position.set(-1.1, 3.2, 0.2);
+            houseGroup.add(interiorLight);
+
+            // Main Roof Slab (Y = 4.10 to 4.32)
+            const mainRoofSlab = makeMesh(new THREE.BoxGeometry(10.0, 0.22, totalDepth), creamMat);
+            mainRoofSlab.position.set(0.4, 4.21, centerZ);
+            houseGroup.add(mainRoofSlab);
+
+            // Roof Terrace Floor Surface
+            const roofTerraceFloor = makeMesh(new THREE.BoxGeometry(9.5, 0.03, totalDepth - 0.5), slateMat);
+            roofTerraceFloor.position.set(0.4, 4.33, centerZ);
+            houseGroup.add(roofTerraceFloor);
+
+            // =========================================================================
+            // 2. FRONT PORCH PLATFORM, 3 STEPS, MAROON PILLARS & CANTILEVER SLAB
+            // =========================================================================
+            const porchBaseMaroon = makeMesh(new THREE.BoxGeometry(5.95, 0.50, 2.25), maroonMat);
+            porchBaseMaroon.position.set(-1.625, 0.25, 2.75);
+            houseGroup.add(porchBaseMaroon);
+
+            const porchCreamRim = makeMesh(new THREE.BoxGeometry(6.02, 0.06, 2.32), creamTrimMat);
+            porchCreamRim.position.set(-1.625, 0.52, 2.75);
+            houseGroup.add(porchCreamRim);
+
+            const porchTileTop = makeMesh(new THREE.BoxGeometry(5.85, 0.03, 2.15), slateMat);
+            porchTileTop.position.set(-1.625, 0.555, 2.75);
+            houseGroup.add(porchTileTop);
+
+            // 3 Wide Front Steps leading from Porch (Y=0.54) down to Courtyard (Y=0.0)
+            const stepWidth = 4.35;
+            const stepCenterX = -1.58;
+            for (let s = 0; s < 3; s++) {
+                const stepH = 0.18 * (3 - s);
+                const stepZ = 3.85 + (s * 0.34) + 0.17;
+                const riser = makeMesh(new THREE.BoxGeometry(stepWidth, stepH - 0.03, 0.36), creamTrimMat);
+                riser.position.set(stepCenterX, (stepH - 0.03) / 2, stepZ);
+                houseGroup.add(riser);
+
+                const tread = makeMesh(new THREE.BoxGeometry(stepWidth + 0.04, 0.035, 0.39), slateMat);
+                tread.position.set(stepCenterX, stepH - 0.015, stepZ + 0.015);
+                houseGroup.add(tread);
+            }
+
+            // Two Thick Deep-Maroon Square Porch Pillars
+            const leftPorchPillar = makeMesh(new THREE.BoxGeometry(0.68, 3.36, 0.62), maroonMat);
+            leftPorchPillar.position.set(-4.15, 0.54 + 1.68, 3.55);
+            houseGroup.add(leftPorchPillar);
+
+            const rightPorchPillar = makeMesh(new THREE.BoxGeometry(0.68, 3.36, 0.62), maroonMat);
+            rightPorchPillar.position.set(0.90, 0.54 + 1.68, 3.55);
+            houseGroup.add(rightPorchPillar);
+
+            // Cantilevered Porch Roof Slab
+            const porchSoffitTrim = makeMesh(new THREE.BoxGeometry(6.35, 0.10, 2.65), creamTrimMat);
+            porchSoffitTrim.position.set(-1.62, 3.95, 2.95);
+            houseGroup.add(porchSoffitTrim);
+
+            const porchTeakCeiling = makeMesh(new THREE.BoxGeometry(4.45, 0.04, 2.15), teakHorizMat);
+            porchTeakCeiling.position.set(-1.62, 3.90, 2.68);
+            houseGroup.add(porchTeakCeiling);
+
+            const bulbMat = new THREE.MeshStandardMaterial({
+                color: 0xFFF3D1,
+                emissive: 0xFFAE42,
+                emissiveIntensity: 0.45
+            });
+            emissiveFixtures.push(bulbMat);
+
+            [-2.65, -0.60].forEach(lx => {
+                const ring = makeMesh(new THREE.CylinderGeometry(0.11, 0.11, 0.02, 20), whiteFrameMat, false, false);
+                ring.position.set(lx, 3.88, 2.65);
+                houseGroup.add(ring);
+
+                const bulb = makeMesh(new THREE.CylinderGeometry(0.08, 0.08, 0.025, 20), bulbMat, false, false);
+                bulb.position.set(lx, 3.875, 2.65);
+                houseGroup.add(bulb);
+
+                const pLight = new THREE.PointLight(0xFFBA66, 0.35, 7);
+                pLight.position.set(lx, 3.72, 2.65);
+                houseGroup.add(pLight);
+                porchLights.push(pLight);
+            });
+
+            const porchMaroonFascia = makeMesh(new THREE.BoxGeometry(6.35, 0.34, 2.65), maroonMat);
+            porchMaroonFascia.position.set(-1.62, 4.17, 2.95);
+            houseGroup.add(porchMaroonFascia);
+
+            // =========================================================================
+            // 3. MAIN WOODEN ENTRANCE DOOR & ATTACHED SIDE WINDOW (L-SHAPED FRAME)
+            // =========================================================================
+            const doorWoodMat = new THREE.MeshStandardMaterial({
+                map: createTeakWoodTexture(true, PALETTE.teakBase),
+                color: 0x9C4212,
+                roughness: 0.42,
+                metalness: 0.08
+            });
+
+            const leftWinJamb = makeMesh(new THREE.BoxGeometry(0.10, 1.47, 0.34), doorWoodMat);
+            leftWinJamb.position.set(-2.50, 2.215, 1.56);
+            houseGroup.add(leftWinJamb);
+
+            const sideWinSill = makeMesh(new THREE.BoxGeometry(0.92, 0.09, 0.36), doorWoodMat);
+            sideWinSill.position.set(-2.10, 1.48, 1.56);
+            houseGroup.add(sideWinSill);
+
+            const centerMullion = makeMesh(new THREE.BoxGeometry(0.10, 2.41, 0.34), doorWoodMat);
+            centerMullion.position.set(-1.65, 1.745, 1.56);
+            houseGroup.add(centerMullion);
+
+            const rightDoorJamb = makeMesh(new THREE.BoxGeometry(0.10, 2.41, 0.34), doorWoodMat);
+            rightDoorJamb.position.set(-0.40, 1.745, 1.56);
+            houseGroup.add(rightDoorJamb);
+
+            const doorTopHeader = makeMesh(new THREE.BoxGeometry(2.20, 0.10, 0.34), doorWoodMat);
+            doorTopHeader.position.set(-1.45, 2.90, 1.56);
+            houseGroup.add(doorTopHeader);
+
+            const sideWinGlass = makeMesh(new THREE.BoxGeometry(0.75, 1.32, 0.02), glassMat, false, false);
+            sideWinGlass.position.set(-2.075, 2.19, 1.56);
+            houseGroup.add(sideWinGlass);
+
+            for (let b = 0; b < 8; b++) {
+                const barY = 1.64 + b * 0.155;
+                const bar = makeMesh(new THREE.CylinderGeometry(0.011, 0.011, 0.76, 8), grillMat);
+                bar.rotation.z = Math.PI / 2;
+                bar.position.set(-2.075, barY, 1.52);
+                houseGroup.add(bar);
+            }
+
+            doorPivot = new THREE.Group();
+            doorPivot.position.set(-0.46, 0.55, 1.56);
+            houseGroup.add(doorPivot);
+
+            const doorWidth = 1.14;
+            const doorHeight = 2.29;
+            const doorLeaf = makeMesh(new THREE.BoxGeometry(doorWidth, doorHeight, 0.06), doorWoodMat);
+            doorLeaf.position.set(-doorWidth / 2, doorHeight / 2, 0);
+            doorPivot.add(doorLeaf);
+
+            const brassMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, roughness: 0.25, metalness: 0.85 });
+            const doorHandle = makeMesh(new THREE.BoxGeometry(0.03, 0.22, 0.09), brassMat);
+            doorHandle.position.set(-doorWidth + 0.12, 1.12, 0);
+            doorPivot.add(doorHandle);
+
+            doorPivot.rotation.y = targetDoorAngle;
+
+            // =========================================================================
+            // 4. LEFT SIDE EXTERIOR STAIRCASE TO ROOF TERRACE (MATCHING SKETCH)
+            // =========================================================================
+            const stairGroup = new THREE.Group();
+            houseGroup.add(stairGroup);
+
+            const stairX = -5.18;
+            const stairWidth = 1.16; // Spans cleanly from X = -5.76 to X = -4.60 (flush with house left wall)
+            const numStairs = 15;
+            const totalStairHeight = 4.32;
+            const stepRise = totalStairHeight / numStairs; // 0.288
+            const stepRun = 0.34;
+            const frontStartZ = 2.40;
+            const waistThickness = 0.26;
+            const landingDepth = 1.67;
+            const landingCenterZ = -3.365;
+            const landingSlabThick = 0.26;
+
+            // Smooth sloped concrete waist slab & cantilevered top landing (clean underside)
+            // Note: rotateY(+Math.PI / 2) maps local +X to world -Z, so local X = -worldZ
+            const waistShape = new THREE.Shape();
+            waistShape.moveTo(-2.57, 0);                                   // Bottom front foot (world Z = +2.57, Y = 0)
+            waistShape.lineTo(-2.57, stepRise);                            // First riser front face
+            waistShape.lineTo(2.53, 4.32);                                 // Top step meeting landing (world Z = -2.53, Y = 4.32)
+            waistShape.lineTo(4.20, 4.32);                                 // Top landing surface to rear (world Z = -4.20, Y = 4.32)
+            waistShape.lineTo(4.20, 4.32 - landingSlabThick);              // Rear landing soffit (Y = 4.06)
+            waistShape.lineTo(2.53, 4.32 - landingSlabThick);              // Underside bend where slope meets landing
+            waistShape.lineTo(-2.22, 0);                                   // Smooth sloped soffit down to ground
+            waistShape.closePath();
+
+            const waistGeo = new THREE.ExtrudeGeometry(waistShape, {
+                depth: stairWidth,
+                bevelEnabled: false
+            });
+            waistGeo.rotateY(Math.PI / 2);
+            const waistSlabMesh = makeMesh(waistGeo, creamMat);
+            waistSlabMesh.position.set(-5.76, 0, 0);
+            stairGroup.add(waistSlabMesh);
+
+            // Individual step risers & granite treads sitting neatly atop the smooth waist slab
+            for (let i = 0; i < numStairs; i++) {
+                const topH = stepRise * (i + 1);
+                const zPos = frontStartZ - (i * stepRun);
+
+                const stepRiser = makeMesh(new THREE.BoxGeometry(stairWidth, stepRise + 0.04, stepRun + 0.02), creamMat);
+                stepRiser.position.set(stairX, topH - (stepRise + 0.04) / 2 - 0.01, zPos);
+                stairGroup.add(stepRiser);
+
+                const stepTop = makeMesh(new THREE.BoxGeometry(stairWidth + 0.02, 0.03, stepRun + 0.05), slateMat);
+                stepTop.position.set(stairX, topH - 0.01, zPos + 0.01);
+                stairGroup.add(stepTop);
+            }
+
+            // Slate grey granite tile surface on top landing
+            const landingTop = makeMesh(new THREE.BoxGeometry(stairWidth, 0.03, landingDepth), slateMat);
+            landingTop.position.set(stairX, 4.33, landingCenterZ);
+            stairGroup.add(landingTop);
+
+            // Low Sloping Handrail & Landing Guard Wall (matching smooth soffit underside)
+            const railHeight = 2.13; // Matches full parapet height (4.32 + 2.13 = 6.45)
+            const landingRailTopY = 4.32 + railHeight; // 6.45
+            const stairWallShape = new THREE.Shape();
+            stairWallShape.moveTo(-2.57, 0);                               // Bottom front foot (world Z = +2.57, Y = 0)
+            stairWallShape.lineTo(-2.57, railHeight);                      // Front post top (world Z = +2.57, Y = 2.13)
+            stairWallShape.lineTo(2.53, landingRailTopY);                  // Sloped handrail along steps (world Z = -2.53, Y = 6.45)
+            stairWallShape.lineTo(4.20, landingRailTopY);                  // Top landing parapet (world Z = -4.20, Y = 6.45)
+            stairWallShape.lineTo(4.20, 4.32 - landingSlabThick);          // Under-slab return at rear (world Z = -4.20)
+            stairWallShape.lineTo(2.53, 4.32 - landingSlabThick);          // Under-landing corner (world Z = -2.53)
+            stairWallShape.lineTo(-2.22, 0);                               // Sloped waist-slab underside back to ground
+            stairWallShape.closePath();
+
+            const stairWallGeo = new THREE.ExtrudeGeometry(stairWallShape, {
+                depth: 0.26,
+                bevelEnabled: false
+            });
+            stairWallGeo.rotateY(Math.PI / 2);
+            const stairParapetWall = makeMesh(stairWallGeo, creamMat);
+            stairParapetWall.position.set(-6.02, 0, 0);
+            stairGroup.add(stairParapetWall);
+
+            // Maroon Top Coping Cap along the Sloped Stair Handrail & Top Landing (aligned with Y = 6.45 terrace coping)
+            const slopeLength = Math.hypot(2.53 - (-2.57), landingRailTopY - railHeight);
+            const slopeAngle = Math.atan2(landingRailTopY - railHeight, 2.53 - (-2.57));
+            const slopedRailCap = makeMesh(new THREE.BoxGeometry(0.34, 0.22, slopeLength + 0.08), maroonMat);
+            slopedRailCap.position.set(-5.89, (railHeight + landingRailTopY) / 2 + 0.08, (-2.57 + 2.53) / 2 * -1);
+            slopedRailCap.rotation.x = slopeAngle;
+            stairGroup.add(slopedRailCap);
+
+            const landingSideCap = makeMesh(new THREE.BoxGeometry(0.34, 0.22, landingDepth + 0.14), maroonMat);
+            landingSideCap.position.set(-5.89, landingRailTopY + 0.08, landingCenterZ - 0.03);
+            stairGroup.add(landingSideCap);
+
+            // =========================================================================
+            // 5. RIGHT FRONT SECTION: 3-PANEL CASEMENT WINDOW, CHAJJA & PLANTER
+            // =========================================================================
+            const winCenterX = 3.25;
+            const winBottomY = 1.75;
+            const winTopY = 3.25;
+            const winWidth = 2.40;
+            const winHeight = 1.50;
+
+            const surroundThick = 0.14;
+            const surroundDepth = 0.24;
+            const winTopSurround = makeMesh(new THREE.BoxGeometry(winWidth + surroundThick * 2, surroundThick, surroundDepth), creamTrimMat);
+            winTopSurround.position.set(winCenterX, winTopY + surroundThick / 2, frontZ + 0.08);
+            houseGroup.add(winTopSurround);
+
+            const winBotSurround = makeMesh(new THREE.BoxGeometry(winWidth + surroundThick * 2, surroundThick, surroundDepth), creamTrimMat);
+            winBotSurround.position.set(winCenterX, winBottomY - surroundThick / 2, frontZ + 0.08);
+            houseGroup.add(winBotSurround);
+
+            const winLeftSurround = makeMesh(new THREE.BoxGeometry(surroundThick, winHeight, surroundDepth), creamTrimMat);
+            winLeftSurround.position.set(winCenterX - winWidth / 2 - surroundThick / 2, (winTopY + winBottomY) / 2, frontZ + 0.08);
+            houseGroup.add(winLeftSurround);
+
+            const winRightSurround = makeMesh(new THREE.BoxGeometry(surroundThick, winHeight, surroundDepth), creamTrimMat);
+            winRightSurround.position.set(winCenterX + winWidth / 2 + surroundThick / 2, (winTopY + winBottomY) / 2, frontZ + 0.08);
+            houseGroup.add(winRightSurround);
+
+            const panelW = winWidth / 3;
+            for (let p = 0; p < 3; p++) {
+                const px = (winCenterX - winWidth / 2) + panelW * (p + 0.5);
+
+                const pane = makeMesh(new THREE.BoxGeometry(panelW - 0.06, winHeight - 0.08, 0.02), glassMat, false, false);
+                pane.position.set(px, (winTopY + winBottomY) / 2, frontZ - 0.02);
+                houseGroup.add(pane);
+
+                const sashTop = makeMesh(new THREE.BoxGeometry(panelW - 0.02, 0.06, 0.07), whiteFrameMat);
+                sashTop.position.set(px, winTopY - 0.03, frontZ);
+                houseGroup.add(sashTop);
+
+                const sashBot = makeMesh(new THREE.BoxGeometry(panelW - 0.02, 0.06, 0.07), whiteFrameMat);
+                sashBot.position.set(px, winBottomY + 0.03, frontZ);
+                houseGroup.add(sashBot);
+
+                const sashL = makeMesh(new THREE.BoxGeometry(0.055, winHeight, 0.07), whiteFrameMat);
+                sashL.position.set(px - panelW / 2 + 0.0275, (winTopY + winBottomY) / 2, frontZ);
+                houseGroup.add(sashL);
+
+                const sashR = makeMesh(new THREE.BoxGeometry(0.055, winHeight, 0.07), whiteFrameMat);
+                sashR.position.set(px + panelW / 2 - 0.0275, (winTopY + winBottomY) / 2, frontZ);
+                houseGroup.add(sashR);
+
+                const vRod = makeMesh(new THREE.CylinderGeometry(0.008, 0.008, winHeight - 0.08, 8), grillMat);
+                vRod.position.set(px, (winTopY + winBottomY) / 2, frontZ + 0.035);
+                houseGroup.add(vRod);
+
+                for (let g = 0; g < 9; g++) {
+                    const gy = winBottomY + 0.14 + g * 0.15;
+                    const hBar = makeMesh(new THREE.CylinderGeometry(0.01, 0.01, panelW - 0.08, 8), grillMat);
+                    hBar.rotation.z = Math.PI / 2;
+                    hBar.position.set(px, gy, frontZ + 0.035);
+                    houseGroup.add(hBar);
+                }
+            }
+
+            // Window Sunshade / Chajja Canopy above Window
+            const chajjaSoffit = makeMesh(new THREE.BoxGeometry(3.05, 0.06, 0.56), creamTrimMat);
+            chajjaSoffit.position.set(winCenterX, 3.56, frontZ + 0.24);
+            houseGroup.add(chajjaSoffit);
+
+            const chajjaMaroon = makeMesh(new THREE.BoxGeometry(3.05, 0.20, 0.56), maroonMat);
+            chajjaMaroon.position.set(winCenterX, 3.69, frontZ + 0.24);
+            houseGroup.add(chajjaMaroon);
+
+            const chajjaTopCap = makeMesh(new THREE.BoxGeometry(3.10, 0.05, 0.59), creamTrimMat);
+            chajjaTopCap.position.set(winCenterX, 3.815, frontZ + 0.24);
+            houseGroup.add(chajjaTopCap);
+
+            // Ground-Level Rectangular Deep-Maroon Planter Box with Cream Rim
+            const planterX = 3.30;
+            const planterZ = frontZ + 0.42;
+            const planterW = 4.18;
+            const planterD = 0.78;
+            const planterH = 0.62;
+
+            const planterBody = makeMesh(new THREE.BoxGeometry(planterW, planterH, planterD), maroonMat);
+            planterBody.position.set(planterX, planterH / 2, planterZ);
+            houseGroup.add(planterBody);
+
+            const rimThick = 0.09;
+            const pRimFront = makeMesh(new THREE.BoxGeometry(planterW + 0.06, 0.06, rimThick), creamTrimMat);
+            pRimFront.position.set(planterX, planterH + 0.03, planterZ + planterD / 2 - 0.02);
+            houseGroup.add(pRimFront);
+
+            const pRimBack = makeMesh(new THREE.BoxGeometry(planterW + 0.06, 0.06, rimThick), creamTrimMat);
+            pRimBack.position.set(planterX, planterH + 0.03, planterZ - planterD / 2 + 0.02);
+            houseGroup.add(pRimBack);
+
+            const pRimLeft = makeMesh(new THREE.BoxGeometry(rimThick, 0.06, planterD), creamTrimMat);
+            pRimLeft.position.set(planterX - planterW / 2 + 0.02, planterH + 0.03, planterZ);
+            houseGroup.add(pRimLeft);
+
+            const pRimRight = makeMesh(new THREE.BoxGeometry(rimThick, 0.06, planterD), creamTrimMat);
+            pRimRight.position.set(planterX + planterW / 2 - 0.02, planterH + 0.03, planterZ);
+            houseGroup.add(pRimRight);
+
+            const soilMat = new THREE.MeshStandardMaterial({ color: 0x3A2718, roughness: 0.95 });
+            const soilBed = makeMesh(new THREE.BoxGeometry(planterW - 0.18, 0.06, planterD - 0.18), soilMat, false, true);
+            soilBed.position.set(planterX, planterH - 0.02, planterZ);
+            houseGroup.add(soilBed);
+
+            buildPlanterPlants(planterX, planterH, planterZ);
+
+            // =========================================================================
+            // 6. UPPER PARAPET & ARCHITECTURAL FACADE FEATURES
+            // =========================================================================
+            const parapetBaseY = 4.32;
+            const parapetTopY = 6.45;
+            const parapetH = parapetTopY - parapetBaseY; // 2.13
+
+            const frontParapetWall = makeMesh(new THREE.BoxGeometry(10.0, parapetH, 0.34), creamMat);
+            frontParapetWall.position.set(0.4, parapetBaseY + parapetH / 2, frontZ - 0.17);
+            houseGroup.add(frontParapetWall);
+
+            // Side & Rear Roof Terrace Parapet Walls (Same full height Y = 6.45 as front wall)
+            const terraceWallH = parapetH; // 2.13 (top at Y = 6.45)
+            const terraceWallTopY = parapetTopY; // 6.45
+            const leftTerraceWall = makeMesh(new THREE.BoxGeometry(0.26, terraceWallH, 6.06), creamMat);
+            leftTerraceWall.position.set(-4.47, parapetBaseY + terraceWallH / 2, 0.23);
+            houseGroup.add(leftTerraceWall);
+
+            const rightTerraceWall = makeMesh(new THREE.BoxGeometry(0.26, terraceWallH, totalDepth - 0.34), creamMat);
+            rightTerraceWall.position.set(5.27, parapetBaseY + terraceWallH / 2, centerZ - 0.17);
+            houseGroup.add(rightTerraceWall);
+
+            const rearTerraceWall = makeMesh(new THREE.BoxGeometry(10.0, terraceWallH, 0.26), creamMat);
+            rearTerraceWall.position.set(0.4, parapetBaseY + terraceWallH / 2, backZ + 0.13);
+            houseGroup.add(rearTerraceWall);
+
+            // Maroon Top Coping Cap along Terrace Side/Rear Walls (aligned with front top coping)
+            const leftCoping = makeMesh(new THREE.BoxGeometry(0.34, 0.22, 6.14), maroonMat);
+            leftCoping.position.set(-4.47, terraceWallTopY + 0.08, 0.27);
+            houseGroup.add(leftCoping);
+
+            const rightCoping = makeMesh(new THREE.BoxGeometry(0.34, 0.22, totalDepth - 0.2), maroonMat);
+            rightCoping.position.set(5.27, terraceWallTopY + 0.08, centerZ - 0.1);
+            houseGroup.add(rightCoping);
+
+            const rearCoping = makeMesh(new THREE.BoxGeometry(10.1, 0.22, 0.34), maroonMat);
+            rearCoping.position.set(0.4, terraceWallTopY + 0.08, backZ + 0.13);
+            houseGroup.add(rearCoping);
+
+            // Rear End Closure Parapet Wall at the back of the cantilevered stair landing (Y = 4.06 to 6.45, matching full terrace height)
+            const landingRearClosureH = landingRailTopY - (4.32 - landingSlabThick);
+            const landingRearClosureWall = makeMesh(new THREE.BoxGeometry(1.54, landingRearClosureH, 0.26), creamMat);
+            landingRearClosureWall.position.set(-5.25, (4.32 - landingSlabThick) + landingRearClosureH / 2, backZ + 0.13);
+            houseGroup.add(landingRearClosureWall);
+
+            const landingRearCoping = makeMesh(new THREE.BoxGeometry(1.62, 0.22, 0.34), maroonMat);
+            landingRearCoping.position.set(-5.25, landingRailTopY + 0.08, backZ + 0.13);
+            houseGroup.add(landingRearCoping);
+
+            // Far-Left & Far-Right Full-Height Deep-Maroon Vertical Edge Columns
+            const farLeftBand = makeMesh(new THREE.BoxGeometry(0.68, 6.50, 0.42), maroonMat);
+            farLeftBand.position.set(-4.32, 3.25, frontZ - 0.15);
+            houseGroup.add(farLeftBand);
+
+            const farRightBand = makeMesh(new THREE.BoxGeometry(0.66, 6.50, 0.42), maroonMat);
+            farRightBand.position.set(5.12, 3.25, frontZ - 0.15);
+            houseGroup.add(farRightBand);
+
+            // Horizontal Deep-Maroon Roofline Coping Bar across Front Top
+            const topMaroonCoping = makeMesh(new THREE.BoxGeometry(10.22, 0.22, 0.48), maroonMat);
+            topMaroonCoping.position.set(0.4, parapetTopY + 0.08, frontZ - 0.12);
+            houseGroup.add(topMaroonCoping);
+
+            // Upper Left: Three Vertical Deep-Maroon Relief Stripes extending down to Porch Roof
+            const stripeXs = [-3.48, -2.96, -2.44];
+            stripeXs.forEach(sx => {
+                const vStripe = makeMesh(new THREE.BoxGeometry(0.30, 2.22, 0.14), maroonMat);
+                vStripe.position.set(sx, 4.42 + 1.11, frontZ + 0.04);
+                houseGroup.add(vStripe);
+            });
+
+            // Upper Center: Recessed Teak Wood Slatted Panel with Curved Top-Right Corner & Cream Border
+            buildUpperTeakLotusFeature(frontZ, teakVertMat, creamTrimMat);
+
+            // Upper Right: Two Interlocking 3D Square Frames
+            buildInterlockingSquares(frontZ, creamTrimMat, maroonMat);
+        }
+
+        /**
+         * Upper-Center Teak Wood Panel with Curved Top-Right Corner & White 3D Lotus Emblem
+         */
+        function buildUpperTeakLotusFeature(frontZ, teakMat, creamTrimMat) {
+            const group = new THREE.Group();
+            houseGroup.add(group);
+
+            const x0 = -2.29;
+            const x1 = 1.35;
+            const y0 = 4.43;
+            const y1 = 5.65;
+            const r = 0.62;
+
+            const teakShape = new THREE.Shape();
+            teakShape.moveTo(x0, y0);
+            teakShape.lineTo(x1, y0);
+            teakShape.lineTo(x1, y1 - r);
+            teakShape.absarc(x1 - r, y1 - r, r, 0, Math.PI / 2, false);
+            teakShape.lineTo(x0, y1);
+            teakShape.closePath();
+
+            const teakGeo = new THREE.ExtrudeGeometry(teakShape, {
+                depth: 0.07,
+                bevelEnabled: false,
+                curveSegments: 32
+            });
+            const pos = teakGeo.attributes.position;
+            const uv = teakGeo.attributes.uv;
+            for (let i = 0; i < pos.count; i++) {
+                uv.setXY(i, (pos.getX(i) - x0) / 1.5, (pos.getY(i) - y0) / 1.5);
+            }
+
+            const teakMesh = makeMesh(teakGeo, teakMat);
+            teakMesh.position.set(0, 0, frontZ - 0.01);
+            group.add(teakMesh);
+
+            const bThick = 0.16;
+            const rOuter = r + bThick;
+            const borderShape = new THREE.Shape();
+            borderShape.moveTo(x0, y1);
+            borderShape.lineTo(x1 - r, y1);
+            borderShape.absarc(x1 - r, y1 - r, r, Math.PI / 2, 0, true);
+            borderShape.lineTo(x1, y0);
+            borderShape.lineTo(x1 + bThick, y0);
+            borderShape.lineTo(x1 + bThick, y1 + bThick - rOuter);
+            borderShape.absarc(x1 + bThick - rOuter, y1 + bThick - rOuter, rOuter, 0, Math.PI / 2, false);
+            borderShape.lineTo(x0, y1 + bThick);
+            borderShape.closePath();
+
+            const borderGeo = new THREE.ExtrudeGeometry(borderShape, {
+                depth: 0.15,
+                bevelEnabled: true,
+                bevelThickness: 0.01,
+                bevelSize: 0.01,
+                bevelSegments: 2,
+                curveSegments: 32
+            });
+            const borderMesh = makeMesh(borderGeo, creamTrimMat);
+            borderMesh.position.set(0, 0, frontZ - 0.01);
+            group.add(borderMesh);
+
+            const lotusCenter = new THREE.Vector3(-0.62, 4.98, frontZ + 0.065);
+            const lotusGroup = new THREE.Group();
+            lotusGroup.position.copy(lotusCenter);
+            group.add(lotusGroup);
+
+            const lotusMat = new THREE.MeshStandardMaterial({
+                color: 0xFFFFFF,
+                roughness: 0.28,
+                metalness: 0.08
+            });
+            allHouseMaterials.push(lotusMat);
+
+            function createLotusPetalShape(height, width) {
+                const s = new THREE.Shape();
+                s.moveTo(0, 0);
+                s.quadraticCurveTo(width, height * 0.45, 0, height);
+                s.quadraticCurveTo(-width, height * 0.45, 0, 0);
+                return s;
+            }
+
+            const centerPetalGeo = new THREE.ExtrudeGeometry(createLotusPetalShape(0.46, 0.15), {
+                depth: 0.045,
+                bevelEnabled: true,
+                bevelThickness: 0.012,
+                bevelSize: 0.01,
+                bevelSegments: 3
+            });
+            const centerPetal = makeMesh(centerPetalGeo, lotusMat);
+            lotusGroup.add(centerPetal);
+
+            [-1, 1].forEach(dir => {
+                const sidePetalGeo = new THREE.ExtrudeGeometry(createLotusPetalShape(0.42, 0.13), {
+                    depth: 0.04,
+                    bevelEnabled: true,
+                    bevelThickness: 0.01,
+                    bevelSize: 0.008,
+                    bevelSegments: 3
+                });
+                const sidePetal = makeMesh(sidePetalGeo, lotusMat);
+                sidePetal.position.set(dir * 0.03, -0.02, -0.005);
+                sidePetal.rotation.z = -dir * 0.92;
+                lotusGroup.add(sidePetal);
+            });
+        }
+
+        /**
+         * Upper-Right Two Interlocking 3D Square Frames
+         */
+        function buildInterlockingSquares(frontZ, creamMat, maroonMat) {
+            function createHollowSquare(outerSize, thickness, depth, material) {
+                const half = outerSize / 2;
+                const inner = half - thickness;
+                const shape = new THREE.Shape();
+                shape.moveTo(-half, -half);
+                shape.lineTo(half, -half);
+                shape.lineTo(half, half);
+                shape.lineTo(-half, half);
+                shape.closePath();
+
+                const hole = new THREE.Path();
+                hole.moveTo(-inner, -inner);
+                hole.lineTo(-inner, inner);
+                hole.lineTo(inner, inner);
+                hole.lineTo(inner, -inner);
+                hole.closePath();
+                shape.holes.push(hole);
+
+                const geo = new THREE.ExtrudeGeometry(shape, {
+                    depth: depth,
+                    bevelEnabled: true,
+                    bevelThickness: 0.012,
+                    bevelSize: 0.012,
+                    bevelSegments: 2
+                });
+                return makeMesh(geo, material);
+            }
+
+            const creamSquare = createHollowSquare(1.26, 0.19, 0.14, creamMat);
+            creamSquare.position.set(2.85, 5.12, frontZ - 0.01);
+            houseGroup.add(creamSquare);
+
+            const maroonSquare = createHollowSquare(1.26, 0.19, 0.21, maroonMat);
+            maroonSquare.position.set(3.42, 5.46, frontZ - 0.01);
+            houseGroup.add(maroonSquare);
+        }
+
+        /**
+         * Build 3D Ornamental Plants in Front Planter Box
+         */
+        function buildPlanterPlants(centerX, baseY, centerZ) {
+            const greenPalmMat = new THREE.MeshStandardMaterial({ color: 0x3B8728, roughness: 0.55, side: THREE.DoubleSide });
+            const brightCrotonMat = new THREE.MeshStandardMaterial({ color: 0xA4C639, roughness: 0.5, side: THREE.DoubleSide });
+            const purpleFoliageMat = new THREE.MeshStandardMaterial({ color: 0x6E1E2E, roughness: 0.55, side: THREE.DoubleSide });
+
+            function createBushCluster(x, z, scale, leafCount, mat, archFactor) {
+                const plant = new THREE.Group();
+                plant.position.set(x, baseY, z);
+
+                const leafShape = new THREE.Shape();
+                leafShape.moveTo(0, 0);
+                leafShape.quadraticCurveTo(0.06, 0.22, 0, 0.48);
+                leafShape.quadraticCurveTo(-0.06, 0.22, 0, 0);
+                const leafGeo = new THREE.ShapeGeometry(leafShape);
+
+                for (let i = 0; i < leafCount; i++) {
+                    const leaf = new THREE.Mesh(leafGeo, mat);
+                    leaf.castShadow = true;
+                    const angle = (i / leafCount) * Math.PI * 2 + (i * 0.37);
+                    const tilt = 0.28 + (i % 3) * archFactor;
+                    leaf.rotation.y = angle;
+                    leaf.rotation.x = tilt;
+                    const s = scale * (0.75 + (i % 4) * 0.1);
+                    leaf.scale.set(s, s, s);
+                    plant.add(leaf);
+                }
+                houseGroup.add(plant);
+            }
+
+            createBushCluster(centerX - 1.45, centerZ, 1.15, 18, greenPalmMat, 0.22);
+            createBushCluster(centerX - 0.72, centerZ + 0.04, 0.75, 16, brightCrotonMat, 0.28);
+            createBushCluster(centerX, centerZ, 1.05, 22, purpleFoliageMat, 0.26);
+            createBushCluster(centerX + 0.72, centerZ + 0.04, 0.72, 16, brightCrotonMat, 0.28);
+            createBushCluster(centerX + 1.48, centerZ, 1.18, 18, greenPalmMat, 0.22);
+        }
+
+        /**
+         * =========================================================================
+         * MASTER UI CONTROLS OPEN/CLOSE & INTERACTIVE VIEWER CONTROLS
+         * =========================================================================
+         */
+        function toggleAllControls() {
+            areControlsOpen = !areControlsOpen;
+
+            const topGroup = document.getElementById('top-controls-group');
+            const bottomGroup = document.getElementById('bottom-controls-group');
+            const paintPanel = document.getElementById('paint-panel');
+            const paintBtn = document.getElementById('btn-paint-studio');
+            const masterBtn = document.getElementById('btn-master-controls');
+            const masterLabel = document.getElementById('master-controls-label');
+
+            if (areControlsOpen) {
+                topGroup.classList.remove('hidden');
+                bottomGroup.classList.remove('hidden');
+                masterBtn.classList.add('active');
+                masterLabel.textContent = 'Hide Options';
+            } else {
+                topGroup.classList.add('hidden');
+                bottomGroup.classList.add('hidden');
+                if (paintPanel && !paintPanel.classList.contains('hidden')) {
+                    paintPanel.classList.add('hidden');
+                    if (paintBtn) paintBtn.classList.remove('active');
+                }
+                masterBtn.classList.remove('active');
+                masterLabel.textContent = 'Show Options';
+            }
+        }
+
+        function setCameraPreset(presetName) {
+            setAutoOrbitState(false);
+
+            document.querySelectorAll('[id^="cam-"]').forEach(btn => {
+                if (btn.id !== 'cam-orbit') btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`cam-${presetName}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            switch (presetName) {
+                case 'front':
+                    targetCamPos.set(0.15, 3.45, 16.5);
+                    targetLookAt.set(0.15, 3.05, 0.8);
+                    break;
+                case 'perspective':
+                    targetCamPos.set(10.8, 5.2, 13.8);
+                    targetLookAt.set(0.2, 2.8, 0.2);
+                    break;
+                case 'porch':
+                    targetCamPos.set(-1.35, 2.25, 8.2);
+                    targetLookAt.set(-1.55, 1.85, 1.8);
+                    break;
+                case 'roof':
+                    targetCamPos.set(-7.5, 8.4, 9.2);
+                    targetLookAt.set(-0.5, 4.4, 0.2);
+                    break;
+                case 'bird':
+                    targetCamPos.set(9.5, 15.5, 14.5);
+                    targetLookAt.set(0.0, 2.2, 0.0);
+                    break;
+            }
+            isTransitioningCamera = true;
+        }
+
+        function toggleAutoOrbit() {
+            setAutoOrbitState(!isAutoOrbit);
+        }
+
+        function setAutoOrbitState(enabled) {
+            isAutoOrbit = enabled;
+            controls.autoRotate = enabled;
+            controls.autoRotateSpeed = 1.35;
+
+            const btn = document.getElementById('cam-orbit');
+            const dot = document.getElementById('orbit-dot');
+            if (enabled) {
+                isTransitioningCamera = false;
+                btn.classList.add('active');
+                dot.classList.remove('bg-[#F6E2C5]/40');
+                dot.classList.add('bg-emerald-400', 'shadow-[0_0_8px_#34d399]');
+            } else {
+                btn.classList.remove('active');
+                dot.classList.add('bg-[#F6E2C5]/40');
+                dot.classList.remove('bg-emerald-400', 'shadow-[0_0_8px_#34d399]');
+            }
+        }
+
+        function setLightingMode(mode) {
+            currentLighting = mode;
+            document.querySelectorAll('[id^="light-"]').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`light-${mode}`).classList.add('active');
+
+            if (mode === 'day') {
+                skyDomeMat.uniforms.topColor.value.setHex(0x5CA4F2);
+                skyDomeMat.uniforms.bottomColor.value.setHex(0xD9EEFF);
+                scene.fog.color.setHex(0xC9E4FF);
+
+                sunLight.color.setHex(0xFFF8EE);
+                sunLight.intensity = 1.25;
+                sunLight.position.set(11, 18, 15);
+
+                hemiLight.color.setHex(0xFFFDF9);
+                hemiLight.groundColor.setHex(0xA88467);
+                hemiLight.intensity = 0.65;
+                ambientLight.intensity = 0.25;
+
+                porchLights.forEach(l => l.intensity = 0.35);
+                interiorLight.intensity = 0.65;
+                emissiveFixtures.forEach(m => m.emissiveIntensity = 0.45);
+                renderer.toneMappingExposure = 1.06;
+
+            } else if (mode === 'sunset') {
+                skyDomeMat.uniforms.topColor.value.setHex(0x2B3A67);
+                skyDomeMat.uniforms.bottomColor.value.setHex(0xF48C42);
+                scene.fog.color.setHex(0xE8985E);
+
+                sunLight.color.setHex(0xFF9442);
+                sunLight.intensity = 1.45;
+                sunLight.position.set(-16, 6.5, 13);
+
+                hemiLight.color.setHex(0xFFB87A);
+                hemiLight.groundColor.setHex(0x593A2E);
+                hemiLight.intensity = 0.55;
+                ambientLight.intensity = 0.22;
+
+                porchLights.forEach(l => l.intensity = 1.25);
+                interiorLight.intensity = 1.1;
+                emissiveFixtures.forEach(m => m.emissiveIntensity = 1.4);
+                renderer.toneMappingExposure = 1.05;
+
+            } else if (mode === 'night') {
+                skyDomeMat.uniforms.topColor.value.setHex(0x070B19);
+                skyDomeMat.uniforms.bottomColor.value.setHex(0x16213E);
+                scene.fog.color.setHex(0x0E1529);
+
+                sunLight.color.setHex(0x6D94D6);
+                sunLight.intensity = 0.32;
+                sunLight.position.set(-10, 16, 12);
+
+                hemiLight.color.setHex(0x3B4D7A);
+                hemiLight.groundColor.setHex(0x1A1412);
+                hemiLight.intensity = 0.32;
+                ambientLight.intensity = 0.16;
+
+                porchLights.forEach(l => l.intensity = 2.4);
+                interiorLight.intensity = 2.1;
+                emissiveFixtures.forEach(m => m.emissiveIntensity = 2.6);
+                renderer.toneMappingExposure = 1.18;
+            }
+        }
+
+        function toggleDoor() {
+            isDoorOpen = !isDoorOpen;
+            targetDoorAngle = isDoorOpen ? -0.95 : 0;
+
+            const btn = document.getElementById('btn-door');
+            const label = document.getElementById('door-label');
+            if (isDoorOpen) {
+                btn.classList.add('active');
+                label.textContent = 'Close Door';
+            } else {
+                btn.classList.remove('active');
+                label.textContent = 'Open Door';
+            }
+        }
+
+        function toggleWireframe() {
+            isWireframe = !isWireframe;
+            const btn = document.getElementById('btn-wireframe');
+            btn.classList.toggle('active', isWireframe);
+
+            allHouseMaterials.forEach(mat => {
+                if (mat && 'wireframe' in mat) {
+                    mat.wireframe = isWireframe;
+                }
+            });
+        }
+
+        /**
+         * =========================================================================
+         * EXTERIOR PAINT STUDIO & LIVE COLOR PICKER LOGIC
+         * =========================================================================
+         */
+        function initPaintCustomizerUI() {
+            Object.keys(ZONE_SWATCHES).forEach(zone => {
+                const container = document.getElementById(`swatches-${zone}`);
+                if (!container) return;
+                container.innerHTML = '';
+
+                ZONE_SWATCHES[zone].forEach(swatch => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'color-chip w-5 h-5 rounded-full border border-white/40 cursor-pointer focus:outline-none';
+                    btn.style.backgroundColor = swatch.hex;
+                    btn.title = `${swatch.name} (${swatch.hex})`;
+                    btn.onclick = () => updateZoneColor(zone, swatch.hex);
+                    container.appendChild(btn);
+                });
+            });
+        }
+
+        function togglePaintPanel() {
+            const panel = document.getElementById('paint-panel');
+            const btn = document.getElementById('btn-paint-studio');
+            const isHidden = panel.classList.contains('hidden');
+
+            if (isHidden) {
+                panel.classList.remove('hidden');
+                btn.classList.add('active');
+            } else {
+                panel.classList.add('hidden');
+                btn.classList.remove('active');
+            }
+        }
+
+        function updateZoneColor(zone, hexColor) {
+            const normalizedHex = hexColor.toUpperCase();
+            activePaintColors[zone] = normalizedHex;
+
+            const picker = document.getElementById(`picker-${zone}`);
+            const hexLabel = document.getElementById(`hex-${zone}`);
+            if (picker && picker.value.toUpperCase() !== normalizedHex) {
+                picker.value = normalizedHex;
+            }
+            if (hexLabel) {
+                hexLabel.textContent = normalizedHex;
+            }
+
+            switch (zone) {
+                case 'wall':
+                    if (sharedMaterials.creamMat) {
+                        sharedMaterials.creamMat.color.set(normalizedHex);
+                    }
+                    break;
+
+                case 'accent':
+                    if (sharedMaterials.maroonMat) {
+                        sharedMaterials.maroonMat.color.set(normalizedHex);
+                    }
+                    break;
+
+                case 'wood':
+                    if (sharedMaterials.teakVertMat && sharedMaterials.teakHorizMat) {
+                        if (sharedMaterials.teakVertMat.map) sharedMaterials.teakVertMat.map.dispose();
+                        if (sharedMaterials.teakHorizMat.map) sharedMaterials.teakHorizMat.map.dispose();
+
+                        sharedMaterials.teakVertMat.map = createTeakWoodTexture(true, normalizedHex);
+                        sharedMaterials.teakVertMat.needsUpdate = true;
+
+                        sharedMaterials.teakHorizMat.map = createTeakWoodTexture(false, normalizedHex);
+                        sharedMaterials.teakHorizMat.needsUpdate = true;
+                    }
+                    break;
+
+                case 'trim':
+                    if (sharedMaterials.creamTrimMat) {
+                        sharedMaterials.creamTrimMat.color.set(normalizedHex);
+                    }
+                    if (sharedMaterials.whiteFrameMat) {
+                        sharedMaterials.whiteFrameMat.color.set(normalizedHex);
+                    }
+                    break;
+
+                case 'granite':
+                    if (sharedMaterials.slateMat) {
+                        if (sharedMaterials.slateMat.map) sharedMaterials.slateMat.map.dispose();
+                        sharedMaterials.slateMat.map = createSlateTileTexture(4, 3, normalizedHex);
+                        sharedMaterials.slateMat.needsUpdate = true;
+                    }
+                    break;
+            }
+        }
+
+        function applyColorCombo(comboKey) {
+            const combo = EXTERIOR_COMBOS[comboKey];
+            if (!combo) return;
+            Object.keys(combo).forEach(zone => {
+                updateZoneColor(zone, combo[zone]);
+            });
+        }
+
+        function resetOriginalColors() {
+            applyColorCombo('original');
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        /**
+         * Main Animation Loop
+         */
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (doorPivot) {
+                doorPivot.rotation.y += (targetDoorAngle - doorPivot.rotation.y) * 0.08;
+            }
+
+            if (isTransitioningCamera) {
+                camera.position.lerp(targetCamPos, 0.065);
+                controls.target.lerp(targetLookAt, 0.065);
+
+                if (camera.position.distanceTo(targetCamPos) < 0.04 &&
+                    controls.target.distanceTo(targetLookAt) < 0.04) {
+                    isTransitioningCamera = false;
+                }
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Launch 3D Viewer once DOM & external scripts are loaded
+        window.onload = function () {
+            init();
+        };
+    </script>
+</body>
+</html>
